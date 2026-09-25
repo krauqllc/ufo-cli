@@ -1,0 +1,381 @@
+No public release is yet published under these terms; they take effect with the
+first public CLI release.
+
+UFO business use license
+========================
+
+Universal File Opener command line and engine binaries
+Copyright 2026 Krauq LLC. All rights reserved.
+
+This license covers the UFO binaries: the Linux app image, the Debian package,
+the restricted OCI container image, and any other executable distribution of
+Universal File Opener that embeds the office-core and viewer-core engines.
+
+It does NOT cover the source files that the repository root LICENSE places
+under the Apache License, Version 2.0: cli/, docs/cli/schemas/, tools/cli/,
+tools/corpus/, tools/audit/, packaging/linux-cli/, packaging/npm/ and
+packaging/homebrew/. Those keep their Apache terms whether or not you hold a
+license under this document. The engines themselves, office-core,
+viewer-core, office-compose, office-compose-android, desktop-app, app,
+ios-app and baselineprofile, carry no open source grant. A binary distributed
+by Krauq LLC combines those Apache licensed sources with the proprietary
+engines, and the binary as a whole is licensed under this document, with the
+Apache License text and the NOTICE file included as that license requires.
+
+1. Definitions
+--------------
+
+"Software" means the UFO binaries described above, in the exact form supplied,
+identified by the release hashes and the container digest published with them.
+
+"You" means the individual or the organization exercising the rights in this
+document. For an organization, You includes its affiliates under common
+control.
+
+"Organization" means any company, partnership, sole proprietorship acting in
+trade, government body, school district, charity or other legal entity, and
+any group of people acting for one of them.
+
+"People" means the total number of full time employees, part time employees
+and long term contractors of the Organization, counted worldwide, whether or
+not they use the Software. Every person in the Organization counts, not only
+the people whose work the Software supports.
+
+"Annual revenue" means the Organization's total gross revenue, worldwide, over
+its most recently completed fiscal year, before expenses and taxes, plus any
+funding the Organization raised in that same period. Raised funding counts.
+
+"Commercial use" means use by or for an Organization, or use that directly
+supports paid work, including client deliverables, internal business
+documents and a product or service You sell.
+
+2. Free use
+-----------
+
+No fee and no separate agreement are required for any of the following. These
+grants are perpetual for the release You received and do not expire when a
+paid license elsewhere lapses.
+
+The free tier is full fidelity: every verb and every format the Software
+supports, at full quality, with no feature withheld and no output
+watermarked. It carries three bounds: a batch plan may run up to twenty five
+(25) steps; a folder report or a folder search may cover up to two hundred
+(200) files; and the Software runs one worker at a time, meaning no parallel
+jobs, and an MCP server that answers one request at a time. No other document,
+page or command meter applies.
+
+  (a) Individuals. Use by a natural person for personal projects, learning,
+      hobby work, personal finances and unpaid volunteer work.
+
+  (b) Evaluation. Use by anyone, including any Organization of any size, to
+      evaluate whether the Software fits a job, for as long as it likes. The
+      free tier bounds above are the evaluation: there is no separate time
+      limit and nothing to renew. Evaluation includes running the Software on
+      Your own files, benchmarking it and building a prototype with it. Work
+      past those bounds needs a paid organization license under section 3,
+      and the thirty (30) day refund on an Organization's first purchase,
+      described there, is the trial at that scale.
+
+  (c) Education. Use by students, teachers, academic researchers and
+      accredited educational institutions for teaching, coursework and
+      non commercial research.
+
+  (d) Non commercial use. Use by a registered charity, a non profit or an open
+      source project, where the output is not sold and does not support paid
+      work.
+
+  (e) Small organizations. Commercial use by an Organization with BOTH fewer
+      than ten (10) People AND less than one million United States dollars
+      (USD 1,000,000) in annual revenue. Both tests apply together. An
+      Organization that crosses either threshold may keep using the free tier
+      for ninety (90) days after it crosses, and needs a paid organization
+      license for commercial use after that.
+
+Free use under this section is the same Software paid Organizations run: the
+same operations, the same formats and the same receipts, bounded only by the
+batch, folder and worker limits above.
+
+3. Paid organization license
+----------------------------
+
+An Organization that needs to work past the free tier bounds in section 2, or
+that does not otherwise qualify under section 2, needs a paid organization
+license for commercial use. There are three tiers, each priced by the
+Organization's People count and each self declared by the Organization at
+checkout, no seats:
+
+  Price          Set by the Organization's People count, self declared at
+                 checkout:
+
+                   Up to fifty (50) People: ninety nine United States
+                   dollars (USD 99) per organization per month, or nine
+                   hundred and ninety United States dollars (USD 990) per
+                   organization per year, paid in advance, which is ten
+                   monthly payments for twelve months.
+
+                   Fifty one (51) to five hundred (500) People: four hundred
+                   ninety nine United States dollars (USD 499) per
+                   organization per month, or four thousand nine hundred and
+                   ninety United States dollars (USD 4,990) per organization
+                   per year, paid in advance.
+
+                   Over five hundred (500) People: one thousand nine hundred
+                   ninety nine United States dollars (USD 1,999) per
+                   organization per month, or nineteen thousand nine hundred
+                   and ninety United States dollars (USD 19,990) per
+                   organization per year, paid in advance.
+
+  Band           The tier above that matches the Organization's own People
+                 count, self declared by the Organization at checkout and not
+                 verified at purchase. A band that understates the
+                 Organization's People count is a breach of this license,
+                 cured by buying the license for the correct band; it is not
+                 cured by a refund or cancellation alone.
+  Unit           One legal entity. Not per seat, not per developer, not per
+                 application, not per unattended worker, not per document and
+                 not per page.
+  Term           A monthly license renews each month and a yearly license
+                 renews each year, unless it is cancelled before the renewal
+                 date. Cancellation takes effect at the end of the paid
+                 period.
+  Renewal notice Krauq LLC sends a renewal notice at least thirty (30) days
+                 before a yearly renewal.
+  Licence file   Issued automatically once checkout completes. It names the
+                 Organization, the tier and band, the order reference, the
+                 dates it was issued and expires and the date the
+                 Organization's continuous paid subscription began, and
+                 carries Krauq LLC's signature. Install it with
+                 `ufo license install FILE`; it is Your entitlement, and the
+                 receipt of every operation records the tier it read. It
+                 expires on the paid through date it names, with a fourteen
+                 (14) day grace period after that date before the Software
+                 returns to the free tier bounds in section 2, except as
+                 releases kept below provide.
+  Releases kept  Once an Organization's paid organization license has run
+                 for twelve (12) consecutive months, the Organization keeps,
+                 after that license ends, commercial use at its band's scale
+                 of every release of the Software published on or before
+                 the last paid through date, for as long as it likes. This
+                 is not a renewal: it covers no later release and no defect
+                 response under section 4, and the Software applies it
+                 itself, offline, from the licence file. A cancelled license
+                 and an unpaid renewal both end the subscription; buying
+                 again starts a new one.
+  Refund         A full refund on request within thirty (30) days of an
+                 Organization's first purchase. This window is the trial at
+                 scale: the free tier in section 2 is the evaluation, and this
+                 refund is how You try a paid band's full scale without risk.
+  Currency       Prices are in United States dollars, before tax. The payment
+                 processor collects any applicable tax and handles currency
+                 conversion. Payment terms are otherwise those of the payment
+                 processor's receipt.
+
+The first one hundred (100) paying Organizations keep the price they first
+paid for twenty four (24) months from their first purchase, even if the list
+price rises.
+
+What a paid organization license buys, in addition to the rights in section
+2, is commercial use of the Software by the named Organization at its band's
+scale, without the batch, folder and worker bounds in section 2, the defect
+response commitment in section 4, and, after twelve consecutive paid months,
+the releases kept above. It does not buy configuration
+hours, integration work, a resolution time guarantee or a service level
+agreement.
+
+4. Defect response
+------------------
+
+For a paid Organization, Krauq LLC responds within one business day to a
+report of a defect that breaks a receipted edit, meaning an operation that
+reports a completed receipt while the published output does not match what the
+receipt says it applied, or that changes a source file, or that overwrites an
+existing output. A qualifying defect is fixed in the product and the fix ships
+in a public release.
+
+"Respond" means a human acknowledgement with a triage result. It is not a
+repair deadline. Business days are Monday to Friday, United States Pacific
+time, excluding United States federal holidays. Send a report to
+support@krauq.com and attach the receipt of the failing operation.
+
+This commitment does not cover configuration help, integration assistance,
+performance tuning, unsupported formats, refusals that the documented limits
+describe, or a result You disagree with that the receipt reported honestly. A
+refusal is a correct outcome, not a defect.
+
+5. What this license does not allow
+-----------------------------------
+
+The following require a separate written agreement with Krauq LLC and are
+outside both free and paid use:
+
+  (a) Redistribution. Supplying the Software, in whole or in part, to a third
+      party, whether or not for a fee, including bundling it with Your own
+      product, mirroring the release artifacts, or publishing the container
+      image to a registry You control. Running the Software for Your own
+      Organization's work, including work You are paid to do for a client, is
+      not redistribution. Handing a client the OUTPUT files is not
+      redistribution.
+
+  (b) SDK embedding. Presenting the Software, or any part of it, as a library,
+      SDK, API or component of Your own product, or exposing its operations as
+      a paid service to third parties.
+
+  (c) Resale. Selling, reselling, sublicensing, renting or leasing the
+      Software, and offering it as a hosted or managed service to anyone
+      outside Your Organization.
+
+  (d) Removing or altering the notices, license files, receipt fields, version
+      identity or third party attributions in the Software.
+
+  (e) Using the Software to build a competing document processing engine, or
+      developing a RAR compatible archiver from the extraction only UnRAR
+      component, which its own license forbids.
+
+Agency handoff is ordinary use, not redistribution. An agency may install and
+run the Software on a client controlled machine under the agency's own license
+while the agency performs the work. Once the client operates the Software in
+its own workflows after the handoff, the client needs its own license, which
+is free if the client qualifies under section 2. Handing a client the output
+files is never redistribution.
+
+6. Offline licence file, no activation service, no telemetry
+------------------------------------------------------------
+
+A paid organization license is a signed licence file, not a key and not a
+network check. The file names the Organization, the tier and band, the order
+reference, the dates it was issued and expires and the date the continuous
+paid subscription began, and carries Krauq LLC's signature. Install it once with `ufo license install FILE`; the Software then
+reads it from local storage. There is nothing to enter, activate or renew
+online.
+
+The Software makes no network request, ever: not to check a license, not to
+activate one, not to fetch an update, and not while processing a document.
+The restricted container runs with networking disabled. It sends no
+telemetry: not about the license, not about Your files, not about Your use.
+Krauq LLC does not receive a copy of anything the Software reads or writes.
+
+The licence file is Your entitlement, read locally and enforced locally. The
+receipt of every operation records the tier the Software read when it ran.
+Absent an installed file, or once one expires past its fourteen (14) day
+grace period, the Software runs at the free tier bounds in section 2, not
+disabled, except a release that the kept releases in section 3 cover, which
+keeps the tier the file names. Krauq LLC cannot observe Your use beyond what a support request or a
+license purchase tells it, and does not try to.
+
+7. Reverse engineering
+----------------------
+
+Except to the extent applicable law expressly forbids the restriction, You may
+not reverse engineer, decompile or disassemble the Software.
+
+That restriction does not apply where reverse engineering is necessary to
+debug modifications You make to an LGPL covered library that the Software
+links dynamically, including the GNU C Library. Krauq LLC expressly permits
+that reverse engineering, and permits You to replace those shared libraries
+and relink, as the LGPL requires. Corresponding source and notices for the
+LGPL and GPL covered components, including the OpenJDK runtime under its GPLv2
+Classpath and assembly exceptions and the GraalVM runtime compiled into the
+Linux app image's parser worker under the GPLv2 with the Classpath Exception,
+are made available from the release location for the retention period stated
+with the release.
+
+8. Third party components
+-------------------------
+
+The Software includes third party software under its own licenses. See NOTICE
+at the repository root, the shipped THIRD-PARTY-NOTICES.txt, and the component
+inventories, license review rows and source locks under packaging/linux-cli/.
+Where a third party license grants You rights broader than this document, that
+license controls for that component.
+
+9. Feedback and shared reproduction files
+-----------------------------------------
+
+If You send Krauq LLC a bug report, a reproduction or a suggestion, Krauq LLC
+may use it to improve the product without obligation to You. Do not send files
+You are not authorized to share.
+
+A file You send to reproduce a defect is used only to reproduce and fix that
+defect. It is stored only on devices and accounts Krauq LLC controls. It is
+never published and is never used to train anything. Krauq LLC deletes it on
+request, and in any case no later than ninety (90) days after the fix ships.
+
+10. Term and termination
+------------------------
+
+Free use under section 2 continues for as long as You qualify. A paid license
+runs for its paid term, and the releases it keeps under section 3 are kept
+after it ends. Krauq LLC may terminate this license if You breach
+section 5 and do not cure the breach within thirty (30) days of written
+notice, and at once if You breach section 13. On termination You stop using
+the Software. Krauq LLC will never
+remove, disable or alter Your files, and the Software has no mechanism to do
+so.
+
+Output You already produced with the Software is Yours. Nothing in this
+document claims any right in Your documents or their contents.
+
+11. Warranty disclaimer
+-----------------------
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+UFO is local file intake, reading and editing software. It is not antivirus,
+malware analysis, content disarm and reconstruction, a legal or compliance
+determination, a fidelity guarantee, or proof that any content is benign or
+authentic. A receipt is evidence to review. Review every published output in
+the application that owns the format before relying on it.
+
+12. Limitation of liability and governing law
+---------------------------------------------
+
+To the maximum extent permitted by law, Krauq LLC is not liable for indirect,
+incidental, special, consequential or punitive damages, or for loss of data,
+profits, revenue or business opportunity, arising out of or connected with the
+Software or Your use of it, however caused.
+
+Krauq LLC's aggregate liability for all claims connected with the Software
+will not exceed the total fees the Organization paid Krauq LLC in the twelve
+(12) months before the claim. For free use under section 2 that cap is one
+hundred United States dollars (USD 100).
+
+Krauq LLC gives no indemnity. You are responsible for holding the rights You
+need in the files You process with the Software.
+
+These terms, and any dispute arising out of them or out of the Software, are
+governed by the laws of the State of California, where Krauq LLC is based,
+without regard to its conflict of law rules. The state and federal courts
+located in California are the venue for a dispute that cannot be settled by
+email first. Write to support@krauq.com before anything formal.
+
+Nothing in this section limits any right You have under the mandatory consumer
+protection laws of the place where You live. A consumer in the EU, the UK or
+another jurisdiction whose law says so keeps the protection of the local
+mandatory rules and may be able to bring proceedings in the local courts.
+Nothing in this document excludes or limits liability for death or personal
+injury caused by negligence, for fraud or fraudulent misrepresentation, or for
+anything else that cannot lawfully be excluded or limited.
+
+13. Export and sanctions
+------------------------
+
+You may use, export and re-export the Software only as the laws of the United
+States and of the place where You obtained or use it allow. In particular, the
+Software may not be exported, re-exported or made available (a) into any
+country or region subject to a comprehensive United States embargo, or (b) to
+anyone on the U.S. Treasury Department's Specially Designated Nationals and
+Blocked Persons List or the U.S. Department of Commerce's Denied Persons List
+or Entity List, and it may not be used for an end use those laws prohibit. By
+downloading or using the Software, You represent that You are not located in
+such a country or region, are not on such a list, and are not owned or
+controlled by, or acting for, anyone who is.
+
+14. Precedence
+--------------
+
+If a signed agreement between You and Krauq LLC covers the Software, that
+agreement controls. Otherwise these terms control, from the first public
+release published under them. If a court finds any part of these terms
+unenforceable, the rest still applies.

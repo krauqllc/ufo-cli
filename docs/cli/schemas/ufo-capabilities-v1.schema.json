@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-capabilities-v1.schema.json",
+  "title": "UFO capability matrix v1",
+  "description": "What one packaged UFO build carries: every verb, the receipt it emits, the file kinds it declares support for, every ceiling the receipts report, and what this build refuses. Emitted by `ufo capabilities` and the MCP `capabilities` tool.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "engineVersion", "surface", "limits", "kinds", "verbs", "edit"],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.capabilities" },
+    "schemaVersion": { "const": 1 },
+    "engineVersion": { "type": "string", "minLength": 1 },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rendering", "textRecognition", "desktopCommands", "network", "sourceModification", "outputReplacement", "worker"],
+      "properties": {
+        "rendering": { "type": "boolean" },
+        "textRecognition": { "description": "True when this installation carries the offline recognizer and a model for every bundled language. False is a build without it, not a licence or a setting.", "type": "boolean" },
+        "desktopCommands": { "type": "boolean" },
+        "network": { "const": "none" },
+        "sourceModification": { "const": "never" },
+        "outputReplacement": { "const": "never" },
+        "worker": { "type": "string" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workerTimeoutMillis", "workerMaxHeapMiB", "textRecognition", "maxSourceBytes"],
+      "properties": {
+        "workerTimeoutMillis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["default", "unpackDefault", "minimum", "maximum"],
+          "properties": {
+            "default": { "type": "integer", "minimum": 1 },
+            "unpackDefault": { "type": "integer", "minimum": 1 },
+            "minimum": { "type": "integer", "minimum": 1 },
+            "maximum": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "workerMaxHeapMiB": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["default", "minimum", "maximum"],
+          "properties": {
+            "default": { "type": "integer", "minimum": 1 },
+            "minimum": { "type": "integer", "minimum": 1 },
+            "maximum": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "textRecognition": {
+          "description": "What offline text recognition will and will not do. It runs on a page with no text of its own, or on any page when the caller passes --ocr, and never fetches a model.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["available", "languages", "defaultLanguage", "maxLanguages", "files", "maxPages", "dpi", "maxPagePixels", "pageDeadlineMillis", "deadlineReserveMillis", "approximate", "notice"],
+          "properties": {
+            "available": { "type": "boolean" },
+            "refusal": { "description": "Present only when recognition is unavailable; the wording the verbs print.", "type": "string", "minLength": 1 },
+            "languages": { "description": "The bundled models, by Tesseract code.", "type": "array", "items": { "enum": ["deu", "eng", "fra", "hin", "ind", "spa"] } },
+            "defaultLanguage": { "enum": ["deu", "eng", "fra", "hin", "ind", "spa"] },
+            "maxLanguages": { "description": "Models one run may load at once, joined by + as the engine names them.", "type": "integer", "minimum": 1 },
+            "files": { "description": "The extensions recognition reads.", "type": "array", "items": { "type": "string" } },
+            "maxPages": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["default", "maximum"],
+              "properties": {
+                "default": { "type": "integer", "minimum": 1 },
+                "maximum": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "dpi": {
+              "description": "The density a PDF page is rasterized at before recognition. An image is read at its own resolution.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["default", "minimum", "maximum"],
+              "properties": {
+                "default": { "type": "integer", "minimum": 1 },
+                "minimum": { "type": "integer", "minimum": 1 },
+                "maximum": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "maxPagePixels": { "description": "One page's pixel ceiling. A larger page refuses rather than being quietly downscaled.", "type": "integer", "minimum": 1 },
+            "pageDeadlineMillis": { "description": "How long one page may spend inside the engine, always clamped inside what is left of the worker's own deadline. A page that reaches it contributes nothing and the read refuses.", "type": "integer", "minimum": 1 },
+            "deadlineReserveMillis": { "description": "What the page walk leaves unspent of the worker's wall clock, so a run that recognizes stops in time to publish what it read instead of being killed. Recognition asks for no extra wall clock.", "type": "integer", "minimum": 1 },
+            "approximate": { "const": true },
+            "notice": { "type": "string", "minLength": 1 }
+          }
+        },
+        "maxSourceBytes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["intake", "inspect", "report", "compare", "text", "find", "clean", "render", "edit", "combine", "create", "batch", "convert", "unpack"],
+          "properties": {
+            "intake": { "type": "integer", "minimum": 1 },
+            "inspect": { "type": "integer", "minimum": 1 },
+            "report": { "type": "integer", "minimum": 1 },
+            "compare": { "type": "integer", "minimum": 1 },
+            "text": { "type": "integer", "minimum": 1 },
+            "find": { "type": "integer", "minimum": 1 },
+            "clean": { "type": "integer", "minimum": 1 },
+            "render": { "type": "integer", "minimum": 1 },
+            "edit": { "type": "integer", "minimum": 1 },
+            "combine": { "type": "integer", "minimum": 1 },
+            "create": { "type": "integer", "minimum": 1 },
+            "batch": { "description": "The biggest plan file `ufo batch` reads.", "type": "integer", "minimum": 1 },
+            "convert": { "type": "integer", "minimum": 1 },
+            "unpack": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "license": {
+      "description": "The tier this run is under and the bounds table for every tier. Enforcement is on scale, never on fidelity: no output is marked and no result is degraded. Optional: a build older than the licence file reports no license object.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "verified", "enforcement", "outputsMarked", "network", "refusalCode", "url", "bounds"],
+      "properties": {
+        "tier": { "$ref": "#/$defs/tier" },
+        "verified": { "type": "boolean" },
+        "enforcement": { "const": "scale" },
+        "outputsMarked": { "const": false },
+        "network": { "const": "none" },
+        "refusalCode": { "const": "license_required" },
+        "url": { "type": "string", "minLength": 1 },
+        "bounds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/licenseBounds" } }
+      }
+    },
+    "kinds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/kind" } },
+    "verbs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "available", "batch", "kinds"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "available": { "type": "boolean" },
+          "refusal": { "type": "string", "minLength": 1 },
+          "receipt": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["schema", "schemaVersion"],
+            "properties": {
+              "schema": { "type": "string", "pattern": "^com\\.krauq\\.ufo\\." },
+              "schemaVersion": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "batch": { "type": "boolean" },
+          "kinds": { "type": "array", "items": { "$ref": "#/$defs/kind" } },
+          "formats": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "formatFiles": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true } },
+          "files": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "tools": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "edit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operations", "dryRun", "appliedKinds", "engines"],
+      "properties": {
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "files", "options", "applied"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "files": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+              "options": { "type": "array", "items": { "type": "string", "pattern": "^--" } },
+              "applied": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        },
+        "dryRun": { "description": "Every edit operation accepts --dry-run (MCP dryRun): the batch runs, nothing is published, and the receipt reports status planned with plan.outputSha256.", "const": true },
+        "stamp": {
+          "description": "The provenance stamp an edit writes into a Word, Excel or PowerPoint output when asked (--stamp, MCP stamp true): these custom properties, the time property with --stamp-time (MCP stampTime), and never for the operations listed in except. default says whether this process writes it unasked (on, UFO_STAMP=on), only when asked (off) or never (forbidden, UFO_STAMP=off or ufo mcp --no-stamp).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["default", "properties", "timeProperty", "files", "except"],
+          "properties": {
+            "default": {"enum": ["off", "on", "forbidden"]},
+            "properties": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+            "timeProperty": { "type": "string", "minLength": 1 },
+            "files": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+            "except": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          }
+        },
+        "appliedKinds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "engines": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    }
+  },
+  "$defs": {
+    "kind": {
+      "enum": ["pdf", "image", "audio", "video", "archive", "web", "office", "markdown", "sqlite", "font", "certificate", "calendar", "contact", "email", "spreadsheet", "text", "binary"]
+    },
+    "tier": {
+      "enum": ["free", "organization-50", "organization-500", "organization-unbounded"]
+    },
+    "licenseBounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "people", "batchSteps", "folderFiles", "jobs", "mcpConcurrentRequests"],
+      "properties": {
+        "tier": { "$ref": "#/$defs/tier" },
+        "people": { "description": "The band declared at checkout, for the record. The tier is what is enforced.", "type": "string", "minLength": 1 },
+        "batchSteps": { "type": "integer", "minimum": 1 },
+        "folderFiles": { "type": "integer", "minimum": 1 },
+        "jobs": { "type": "integer", "minimum": 1 },
+        "mcpConcurrentRequests": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

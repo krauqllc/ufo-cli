@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-text-lines-v1.schema.json",
+  "title": "UFO text line window v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "source",
+    "encoding",
+    "lineEnding",
+    "lineCount",
+    "finalLineEnding",
+    "selection",
+    "nextLine",
+    "partial",
+    "scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.text-lines"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "encoding": {
+      "enum": [
+        "utf-8",
+        "utf-8-bom"
+      ]
+    },
+    "lineEnding": {
+      "enum": [
+        "lf",
+        "crlf",
+        "cr",
+        "mixed",
+        "none"
+      ]
+    },
+    "lineCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "finalLineEnding": {
+      "type": "boolean"
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lines",
+        "items"
+      ],
+      "properties": {
+        "lines": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "line",
+              "text",
+              "truncated"
+            ],
+            "properties": {
+              "line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 16384
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "nextLine": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 2,
+      "maximum": 1000000
+    },
+    "partial": {
+      "type": "boolean"
+    },
+    "scope": {
+      "const": "whole lines of UTF-8 text by one-based number; a line's ending, the BOM and every unaddressed byte stay identical; lines are not inserted or deleted"
+    }
+  }
+}

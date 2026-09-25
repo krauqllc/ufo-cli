@@ -1,0 +1,348 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-pdf-pages-v1.schema.json",
+  "title": "UFO PDF page inventory and selected page text v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "source",
+    "pageCount",
+    "pages",
+    "selection",
+    "partial",
+    "scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.pdf-pages"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "pageCount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "chars",
+          "textless"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "chars": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "textless": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "selection": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "pages",
+        "items"
+      ],
+      "properties": {
+        "pages": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "text",
+              "chars",
+              "textless",
+              "truncated",
+              "paragraphs"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 32768
+              },
+              "chars": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "textless": {
+                "type": "boolean"
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "paragraphs": {
+                "type": "array",
+                "maxItems": 500,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "index",
+                    "text",
+                    "lines",
+                    "editable",
+                    "limitation"
+                  ],
+                  "properties": {
+                    "index": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 499
+                    },
+                    "text": {
+                      "type": "string",
+                      "maxLength": 16384
+                    },
+                    "lines": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "editable": {
+                      "type": "boolean"
+                    },
+                    "limitation": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "minLength": 1
+                    }
+                  },
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {
+                          "editable": {
+                            "const": true
+                          }
+                        }
+                      },
+                      "then": {
+                        "properties": {
+                          "limitation": {
+                            "type": "null"
+                          }
+                        }
+                      },
+                      "else": {
+                        "properties": {
+                          "limitation": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "recognized": {
+      "description": "Present only when this read recognized pixels: the selected pages an offline recognizer read, in page order, beside the inventory rather than inside it, so a page row keeps saying what the file stores and this says what a reader of pixels saw. A recognized line is approximate and is never an edit coordinate. An inventory never recognizes; name the pages to read them.",
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "chars",
+          "confidence",
+          "truncated",
+          "lines"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "chars": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "confidence": {
+            "description": "The engine's mean confidence for this page, 0 to 100. A low value is a warning, not a refusal.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "lines": {
+            "type": "array",
+            "maxItems": 2000,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "line",
+                "text",
+                "chars"
+              ],
+              "properties": {
+                "line": {
+                  "description": "One-based line number within this page's reading, the same coordinate a find recognized hit reports.",
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "text": {
+                  "type": "string"
+                },
+                "chars": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ocr": {
+      "description": "Present exactly when this read recognized pixels: the engine, the pages it read, the density, its mean confidence and the sentence that says recognized text is approximate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "language",
+        "models",
+        "pages",
+        "pagesAvailable",
+        "dpi",
+        "truncated",
+        "stoppedBy",
+        "meanConfidence",
+        "approximate",
+        "notice"
+      ],
+      "properties": {
+        "engine": {
+          "type": "string",
+          "pattern": "^tesseract [0-9][0-9A-Za-z.+-]{0,31}$"
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$"
+        },
+        "models": {
+          "type": "string",
+          "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$"
+        },
+        "pages": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "pagesAvailable": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dpi": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 72,
+              "maximum": 400
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "stoppedBy": {
+          "oneOf": [
+            {
+              "enum": [
+                "page-bound",
+                "deadline"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "meanConfidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "approximate": {
+          "const": true
+        },
+        "notice": {
+          "const": "OCR text is approximate: it is what a recognizer read from pixels, not a text layer the file carries."
+        }
+      }
+    },
+    "partial": {
+      "type": "boolean"
+    },
+    "scope": {
+      "enum": [
+        "text layer by page as the shipped reader extracts it; a textless page is explicit; images, annotations, form fields and layout are not read",
+        "text layer by page as the shipped reader extracts it, and for a selected page that carries none, the lines an offline recognizer read from its pixels; a recognized line is approximate, never an edit coordinate; images, annotations, form fields and layout are not read"
+      ]
+    }
+  }
+}

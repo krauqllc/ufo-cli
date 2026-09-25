@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-license-refusal-v1.schema.json",
+  "title": "UFO license refusal v1",
+  "description": "What a command prints when a licence bound refuses it. The invocation is refused whole: nothing is staged, nothing is published and no partial answer is produced. Exit code 1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "action",
+    "status",
+    "code",
+    "message",
+    "bound",
+    "requiredTier",
+    "url",
+    "license",
+    "bounds",
+    "network"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.license-refusal"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "engineVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "description": "The verb that was refused.",
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "const": "refused"
+    },
+    "code": {
+      "const": "license_required"
+    },
+    "message": {
+      "description": "One sentence naming the bound, the tier that lifts it and where to read the terms.",
+      "type": "string",
+      "minLength": 1
+    },
+    "bound": {
+      "description": "Which entry of the bounds table refused.",
+      "enum": [
+        "batchSteps",
+        "folderFiles",
+        "jobs",
+        "mcpConcurrentRequests"
+      ]
+    },
+    "requiredTier": {
+      "description": "The smallest tier that lifts this bound.",
+      "enum": [
+        "organization-50",
+        "organization-500",
+        "organization-unbounded"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "license": {
+      "$ref": "#/$defs/license"
+    },
+    "bounds": {
+      "$ref": "#/$defs/bounds"
+    },
+    "network": {
+      "const": "not_used"
+    }
+  },
+  "$defs": {
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tier",
+        "organization",
+        "expiresAt",
+        "keyId",
+        "source",
+        "verified",
+        "note"
+      ],
+      "properties": {
+        "tier": {
+          "enum": [
+            "free",
+            "organization-50",
+            "organization-500",
+            "organization-unbounded"
+          ]
+        },
+        "organization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiresAt": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "keyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tier",
+        "people",
+        "batchSteps",
+        "folderFiles",
+        "jobs",
+        "mcpConcurrentRequests"
+      ],
+      "properties": {
+        "tier": {
+          "enum": [
+            "free",
+            "organization-50",
+            "organization-500",
+            "organization-unbounded"
+          ]
+        },
+        "people": {
+          "type": "string",
+          "minLength": 1
+        },
+        "batchSteps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "folderFiles": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "jobs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mcpConcurrentRequests": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

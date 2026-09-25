@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-compatibility-audit-comparison-v1.schema.json",
+  "title": "UFO compatibility audit comparison v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "decision",
+    "fileCount",
+    "inputManifestSha256",
+    "counts",
+    "baseline",
+    "candidate",
+    "changes"
+  ],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.compatibility-audit-comparison" },
+    "schemaVersion": { "const": 1 },
+    "decision": { "enum": ["pass", "blocked"] },
+    "fileCount": { "type": "integer", "minimum": 1, "maximum": 20000 },
+    "inputManifestSha256": { "$ref": "#/$defs/sha256" },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unchanged", "improved", "regressed", "review_required"],
+      "properties": {
+        "unchanged": { "type": "integer", "minimum": 0 },
+        "improved": { "type": "integer", "minimum": 0 },
+        "regressed": { "type": "integer", "minimum": 0 },
+        "review_required": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "baseline": { "$ref": "#/$defs/snapshot" },
+    "candidate": { "$ref": "#/$defs/snapshot" },
+    "changes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/change" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "decision": { "const": "pass" } },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "counts": {
+            "properties": {
+              "regressed": { "const": 0 },
+              "review_required": { "const": 0 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision": { "const": "blocked" } },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "counts": {
+            "anyOf": [
+              { "properties": { "regressed": { "minimum": 1 } } },
+              { "properties": { "review_required": { "minimum": 1 } } }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engineVersion", "artifact", "stableResultsSha256"],
+      "properties": {
+        "engineVersion": { "type": "string", "minLength": 1 },
+        "artifact": {
+          "oneOf": [
+            { "$ref": "#/$defs/launcherArtifact" },
+            { "$ref": "#/$defs/containerArtifact" }
+          ]
+        },
+        "stableResultsSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "launcherArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface", "launcher"],
+      "properties": {
+        "surface": { "const": "launcher" },
+        "launcher": { "type": "string", "minLength": 1 }
+      }
+    },
+    "containerArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface", "image", "imageId"],
+      "properties": {
+        "surface": { "const": "container" },
+        "image": { "type": "string", "minLength": 1 },
+        "imageId": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relativePath", "category", "baseline", "candidate"],
+      "properties": {
+        "relativePath": { "type": "string", "minLength": 1 },
+        "category": { "enum": ["improved", "regressed", "review_required"] },
+        "baseline": { "$ref": "#/$defs/resultState" },
+        "candidate": { "$ref": "#/$defs/resultState" }
+      }
+    },
+    "resultState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "resolvedKind",
+        "resolvedFormat",
+        "nameAndBytes",
+        "probeOutcome",
+        "probeLevel",
+        "code",
+        "warnings"
+      ],
+      "properties": {
+        "status": { "enum": ["accepted", "limited", "refused", "failed"] },
+        "resolvedKind": { "type": ["string", "null"] },
+        "resolvedFormat": { "type": ["string", "null"] },
+        "nameAndBytes": {
+          "enum": ["match", "mismatch", "unknown", null]
+        },
+        "probeOutcome": {
+          "enum": [
+            "parsed",
+            "detected_only",
+            "refused",
+            "worker_crashed",
+            "worker_timed_out",
+            "probe_failed",
+            "source_changed",
+            "not_run"
+          ]
+        },
+        "probeLevel": {
+          "enum": ["worker_parsed", "in_process_parsed", "detected_only", "not_run"]
+        },
+        "code": { "type": ["string", "null"] },
+        "warnings": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 3,
+          "items": {
+            "enum": ["name_content_mismatch", "executable_content", "truncated_or_damaged"]
+          }
+        }
+      }
+    }
+  }
+}

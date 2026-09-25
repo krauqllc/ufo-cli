@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-batch-manifest-v1.schema.json",
+  "title": "UFO batch manifest v1",
+  "description": "One `ufo batch` run: the JSON Lines plan it read and, per step, the argv it ran, how it ended, what it cost, the source and output identities the step's own receipt reported, and that receipt inline. The runner orchestrates ordinary single-file commands; each step still runs its own bounded parser worker and nothing is shared between steps. No source is modified, the manifest and every step output are published without replacement, and a refused or failed step stops the batch unless --continue-on-refusal allows a refusal to be stepped over.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "action",
+    "status",
+    "dryRun",
+    "continueOnRefusal",
+    "plan",
+    "manifest",
+    "steps",
+    "totals",
+    "code",
+    "message",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.batch-manifest" },
+    "schemaVersion": { "const": 1 },
+    "engineVersion": { "type": "string", "minLength": 1 },
+    "action": { "const": "batch" },
+    "status": {
+      "description": "completed when every step completed, planned when a dry run planned or accounted for every step, incomplete when any step refused, failed or was an invocation error.",
+      "enum": ["completed", "incomplete", "planned"]
+    },
+    "dryRun": { "type": "boolean" },
+    "continueOnRefusal": { "type": "boolean" },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "name", "sizeBytes", "lastModifiedMillis", "sha256", "steps"],
+      "properties": {
+        "path": { "type": "string" },
+        "name": { "type": "string" },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "lastModifiedMillis": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "steps": { "type": "integer", "minimum": 1, "maximum": 200 }
+      }
+    },
+    "manifest": {
+      "description": "The published manifest file itself, named once it exists; null when publication was refused.",
+      "oneOf": [
+        { "$ref": "#/$defs/identity" },
+        { "type": "null" }
+      ]
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step", "argv", "status", "exitCode", "elapsedMillis", "source", "output", "plannedInput", "receipt", "message"],
+        "properties": {
+          "step": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "argv": {
+            "description": "The argv as it ran, with every relative path resolved against the plan file's directory and any batch-wide limit or --dry-run handed down.",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 260,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "status": {
+            "enum": ["completed", "planned", "refused", "failed", "invocation_error", "skipped"]
+          },
+          "exitCode": { "type": ["integer", "null"], "minimum": 0 },
+          "elapsedMillis": { "type": "integer", "minimum": 0 },
+          "source": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "name", "sizeBytes", "sha256"],
+                "properties": {
+                  "path": { "type": ["string", "null"] },
+                  "name": { "type": ["string", "null"] },
+                  "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+                  "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+                }
+              },
+              { "type": "null" }
+            ]
+          },
+          "output": {
+            "oneOf": [
+              { "$ref": "#/$defs/identity" },
+              { "type": "null" }
+            ]
+          },
+          "plannedInput": {
+            "description": "In a dry run, the earlier step whose planned output this step would have read, with the hash the real run will produce.",
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["step", "path", "sizeBytes", "sha256"],
+                "properties": {
+                  "step": { "type": "string", "minLength": 1 },
+                  "path": { "type": "string" },
+                  "sizeBytes": { "type": "integer", "minimum": 0 },
+                  "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+                }
+              },
+              { "type": "null" }
+            ]
+          },
+          "receipt": {
+            "description": "The step's own receipt exactly as it printed it: one document, or the JSON Lines a per-input verb prints. Null when the command printed no JSON or the receipt exceeded the inline limit.",
+            "type": ["object", "array", "null"]
+          },
+          "message": { "type": ["string", "null"], "maxLength": 512 }
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["steps", "completed", "planned", "refused", "failed", "invocationError", "skipped"],
+      "properties": {
+        "steps": { "type": "integer", "minimum": 1 },
+        "completed": { "type": "integer", "minimum": 0 },
+        "planned": { "type": "integer", "minimum": 0 },
+        "refused": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "invocationError": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "code": { "type": ["string", "null"] },
+    "message": { "type": ["string", "null"] },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxSteps", "maxPlanBytes", "maxArgvTokens", "maxReceiptBytes", "workerTimeoutMillis", "workerMaxHeapMiB"],
+      "properties": {
+        "maxSteps": { "type": "integer", "minimum": 1 },
+        "maxPlanBytes": { "type": "integer", "minimum": 1 },
+        "maxArgvTokens": { "type": "integer", "minimum": 1 },
+        "maxReceiptBytes": { "type": "integer", "minimum": 1 },
+        "workerTimeoutMillis": {
+          "description": "The batch-wide limit handed to every step that takes one, or null when each step keeps the command default.",
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "workerMaxHeapMiB": { "type": ["integer", "null"], "minimum": 1 }
+      }
+    },
+    "durationMillis": { "type": "integer", "minimum": 0 },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": { "const": "not_used" }
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sizeBytes", "sha256"],
+      "properties": {
+        "path": { "type": ["string", "null"] },
+        "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+        "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

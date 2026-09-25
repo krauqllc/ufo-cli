@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-recognized-pages-v1.schema.json",
+  "title": "UFO recognized pages v1",
+  "description": "What an offline recognizer read from the pixels of a file that stores no text: a PNG or a JPEG, which is one page however large it is. Emitted by `ufo text --format structure` on those files. Every coordinate here is approximate and is never an edit coordinate: the file stores pixels, so there is nothing at a line or an offset for an editor to write. A scanned PDF page reports the same reading inside the pdf-pages contract, beside the page inventory the file itself supports.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "source", "pageCount", "pages", "partial", "ocr", "scope"],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.recognized-pages" },
+    "schemaVersion": { "const": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sha256"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "pageCount": {
+      "description": "Pages this source has. A picture is one page.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "pages": {
+      "description": "The pages a recognizer read, in page order.",
+      "type": "array",
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/recognizedPage" }
+    },
+    "partial": {
+      "description": "True when this read did not return everything it describes, because a page's text was cut at the character bound.",
+      "type": "boolean"
+    },
+    "ocr": { "$ref": "#/$defs/ocr" },
+    "scope": {
+      "description": "What this read reports and what it does not, in the source's own words.",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "recognizedPage": {
+      "description": "One page of pixels as the engine read it: its lines in reading order, and the engine's mean confidence for the page.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "chars", "confidence", "truncated", "lines"],
+      "properties": {
+        "index": {
+          "description": "One-based page number. A picture is page 1.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "chars": {
+          "description": "Characters the engine read on this page, before any cut.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "confidence": {
+          "description": "The engine's mean confidence for this page, 0 to 100. A low value is a warning, not a refusal. A page the engine read nothing on reports 0.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "truncated": {
+          "description": "True when this page's reading was cut at the character bound.",
+          "type": "boolean"
+        },
+        "lines": {
+          "description": "The lines the engine saw, in the order it saw them. A wrapped sentence arrives wrapped, because that is what the page looks like.",
+          "type": "array",
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["line", "text", "chars"],
+            "properties": {
+              "line": {
+                "description": "One-based line number within this page's reading. It is the same coordinate a `find` recognized hit reports, and it addresses a reading, never a place to write.",
+                "type": "integer",
+                "minimum": 1
+              },
+              "text": { "type": "string" },
+              "chars": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "ocr": {
+      "description": "What the recognizer did: the engine, the pages it read, the density, its mean confidence and the sentence that says recognized text is approximate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine", "language", "models", "pages", "pagesAvailable", "dpi", "truncated", "stoppedBy", "meanConfidence", "approximate", "notice"],
+      "properties": {
+        "engine": { "type": "string", "pattern": "^tesseract [0-9][0-9A-Za-z.+-]{0,31}$" },
+        "language": { "type": "string", "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$" },
+        "models": { "type": "string", "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$" },
+        "pages": { "type": "array", "maxItems": 200, "items": { "type": "integer", "minimum": 1 } },
+        "pagesAvailable": { "type": "integer", "minimum": 0 },
+        "dpi": { "oneOf": [{ "type": "integer", "minimum": 72, "maximum": 400 }, { "type": "null" }] },
+        "truncated": { "type": "boolean" },
+        "stoppedBy": { "oneOf": [{ "enum": ["page-bound", "deadline"] }, { "type": "null" }] },
+        "meanConfidence": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "approximate": { "const": true },
+        "notice": { "const": "OCR text is approximate: it is what a recognizer read from pixels, not a text layer the file carries." }
+      }
+    }
+  }
+}

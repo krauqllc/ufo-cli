@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-folder-report-v1.schema.json",
+  "title": "UFO folder report v1",
+  "description": "One document from `ufo report`: every file the bounded walk found, inspected with `inspect --deep`, joined into folder-level sections. The same object is printed on standard output and, unless `--markdown` asked for the human form, published to the output path; the published copy carries `output` as null because a file cannot name its own hash.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "action",
+    "status",
+    "roots",
+    "output",
+    "totals",
+    "findings",
+    "privacy",
+    "hiddenContent",
+    "duplicates",
+    "entities",
+    "timeline",
+    "mismatches",
+    "files",
+    "notInspected",
+    "code",
+    "message",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.folder-report" },
+    "schemaVersion": { "const": 1 },
+    "engineVersion": { "type": "string", "minLength": 1 },
+    "action": { "const": "report" },
+    "status": { "enum": ["completed", "refused", "failed"] },
+    "roots": {
+      "description": "The files and directories named on the command line, canonicalized.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "output": {
+      "description": "The published report. Null in the published copy itself, and on a refusal, where nothing was published.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["path", "format", "sizeBytes", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "format": { "enum": ["json", "markdown"] },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roots",
+        "filesWalked",
+        "filesInspected",
+        "filesRefused",
+        "filesFailed",
+        "bytesWalked",
+        "bytesInspected",
+        "archiveEntries"
+      ],
+      "properties": {
+        "roots": { "type": "integer", "minimum": 0 },
+        "filesWalked": { "type": "integer", "minimum": 0 },
+        "filesInspected": { "type": "integer", "minimum": 0 },
+        "filesRefused": { "type": "integer", "minimum": 0 },
+        "filesFailed": { "type": "integer", "minimum": 0 },
+        "bytesWalked": { "type": "integer", "minimum": 0 },
+        "bytesInspected": { "type": "integer", "minimum": 0 },
+        "archiveEntries": {
+          "description": "Non-directory entries the container listings of the walked archives already read.",
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "findings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "bySeverity", "byCategory"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "bySeverity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["high", "medium", "low"],
+          "properties": {
+            "high": { "type": "integer", "minimum": 0 },
+            "medium": { "type": "integer", "minimum": 0 },
+            "low": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "byCategory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["privacy", "hidden", "security", "integrity", "info"],
+          "properties": {
+            "privacy": { "type": "integer", "minimum": 0 },
+            "hidden": { "type": "integer", "minimum": 0 },
+            "security": { "type": "integer", "minimum": 0 },
+            "integrity": { "type": "integer", "minimum": 0 },
+            "info": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "privacy": {
+      "description": "Every privacy finding grouped by its code, highest severity first. Codes, counts and paths only: a matched value never leaves the engine that found it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "severity", "count", "fileCount", "files"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "severity": { "$ref": "#/$defs/severity" },
+          "count": { "type": "integer", "minimum": 1 },
+          "fileCount": { "type": "integer", "minimum": 1 },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path", "count"],
+              "properties": {
+                "path": { "type": "string", "minLength": 1 },
+                "count": { "type": "integer", "minimum": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hiddenContent": {
+      "description": "The hidden and security findings of each file that carries one, in the order the file's own report printed them.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "findings"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "findings": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["code", "category", "severity", "count", "where"],
+              "properties": {
+                "code": { "type": "string", "minLength": 1 },
+                "category": { "enum": ["hidden", "security"] },
+                "severity": { "$ref": "#/$defs/severity" },
+                "count": { "type": "integer", "minimum": 1 },
+                "where": { "type": ["string", "null"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "duplicates": {
+      "description": "Byte identity is only claimed from a hash. A container listing carries an entry's name and size, not its bytes, so an entry joins an identical group only when the listing carries its hash, and joins a same-name group on the proof a different size gives.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identical", "sameNameDifferentBytes"],
+      "properties": {
+        "identical": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sha256", "sizeBytes", "memberCount", "members"],
+            "properties": {
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+              "memberCount": { "type": "integer", "minimum": 2 },
+              "members": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/member" } }
+            }
+          }
+        },
+        "sameNameDifferentBytes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "memberCount", "members"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "memberCount": { "type": "integer", "minimum": 2 },
+              "members": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/member" } }
+            }
+          }
+        }
+      }
+    },
+    "entities": {
+      "description": "Only values the per-file reports already carry, under the field that carried them. No scanner runs here, and matched personal data from the privacy scanners is never listed.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "value", "fileCount", "fields", "files"],
+        "properties": {
+          "kind": { "enum": ["person", "organization", "emailAddress", "domain", "device"] },
+          "value": { "type": "string", "minLength": 1 },
+          "fileCount": { "type": "integer", "minimum": 1 },
+          "fields": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+          "files": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "timeline": {
+      "description": "Every internal date the reports carry, sorted by the instant each value actually names. A value UFO cannot read keeps its raw text with a null instant rather than disappearing.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["events", "eventsTruncated", "anomalies"],
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "field", "value", "normalized", "startMillis", "anomalies"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "field": {
+                "enum": ["created", "modified", "last_printed", "exif_taken", "email_date", "pe_link_time"]
+              },
+              "value": { "type": "string", "minLength": 1 },
+              "normalized": {
+                "description": "ISO 8601 at the precision the value carried, normalized to UTC with a trailing Z when the value named an offset.",
+                "type": ["string", "null"]
+              },
+              "startMillis": { "type": ["integer", "null"] },
+              "anomalies": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": { "$ref": "#/$defs/anomaly" }
+              }
+            }
+          }
+        },
+        "eventsTruncated": { "type": "boolean" },
+        "anomalies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code", "path"],
+            "properties": {
+              "code": { "$ref": "#/$defs/anomaly" },
+              "path": { "type": "string", "minLength": 1 },
+              "field": { "type": "string", "minLength": 1 },
+              "normalized": { "type": "string", "minLength": 1 },
+              "created": { "type": "string", "minLength": 1 },
+              "modified": { "type": "string", "minLength": 1 },
+              "fields": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        }
+      }
+    },
+    "mismatches": {
+      "description": "Files whose `detection.nameAndBytes` is `mismatch`: the extension does not describe the content.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "claimedExtension", "claimedFormat", "contentExtension", "contentFormat"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "claimedExtension": { "type": ["string", "null"] },
+          "claimedFormat": { "type": ["string", "null"] },
+          "contentExtension": { "type": ["string", "null"] },
+          "contentFormat": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "files": {
+      "description": "One row per walked file, in walk order.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "name",
+          "sizeBytes",
+          "sha256",
+          "kind",
+          "nameAndBytes",
+          "status",
+          "highestSeverity",
+          "flags",
+          "findingCount",
+          "code"
+        ],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+          "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+          "kind": {
+            "type": ["string", "null"],
+            "enum": [
+              "pdf", "image", "audio", "video", "archive", "web", "office", "markdown",
+              "sqlite", "font", "certificate", "calendar", "contact", "email", "spreadsheet",
+              "text", "binary", null
+            ]
+          },
+          "nameAndBytes": { "enum": ["match", "mismatch", "unknown", null] },
+          "status": { "enum": ["completed", "refused", "failed"] },
+          "highestSeverity": { "enum": ["none", "low", "medium", "high"] },
+          "flags": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "findingCount": { "type": "integer", "minimum": 0 },
+          "code": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "notInspected": {
+      "description": "Every gap the walk or an engine reported, so silence is never read as a clean verdict. A null path means the walk itself, not one file.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "what", "why"],
+        "properties": {
+          "path": { "type": ["string", "null"] },
+          "what": { "type": "string", "minLength": 1 },
+          "why": { "type": "string" }
+        }
+      }
+    },
+    "code": { "type": ["string", "null"] },
+    "message": { "type": ["string", "null"] },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB",
+        "maxFiles",
+        "maxBytes",
+        "maxDepth",
+        "jobs"
+      ],
+      "properties": {
+        "maxSourceBytes": { "type": "integer", "minimum": 1 },
+        "workerTimeoutMillis": { "type": "integer", "minimum": 1 },
+        "workerMaxHeapMiB": { "type": "integer", "minimum": 1 },
+        "maxFiles": { "type": "integer", "minimum": 1 },
+        "maxBytes": { "type": "integer", "minimum": 1 },
+        "maxDepth": { "type": "integer", "minimum": 1 },
+        "jobs": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "durationMillis": { "type": "integer", "minimum": 0 },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": { "const": "not_used" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "completed" } } },
+      "then": { "properties": { "code": { "type": "null" }, "message": { "type": "null" } } }
+    },
+    {
+      "if": { "properties": { "status": { "enum": ["refused", "failed"] } } },
+      "then": {
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 },
+          "output": { "type": "null" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "severity": { "enum": ["low", "medium", "high"] },
+    "anomaly": { "enum": ["modified_before_created", "future_date", "metadata_disagreement"] },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "entry", "sizeBytes", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "entry": {
+          "description": "The entry name inside the archive at `path`, or null when the member is the file itself.",
+          "type": ["string", "null"]
+        },
+        "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+        "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

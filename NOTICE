@@ -1,0 +1,12 @@
+UFO CLI evaluation tools and schemas
+Copyright 2026 Krauq LLC
+
+The files in this repository are licensed under the Apache License, Version
+2.0; see LICENSE.
+
+The UFO CLI binaries on this repository's Releases page (the Debian package,
+the Linux app image and the container image) are not covered by that license.
+They embed Krauq LLC's proprietary engines and are licensed under the UFO
+business use license in ENGINE-LICENSE.txt. Each package carries its
+third-party notices as THIRD-PARTY-NOTICES.txt, and every release carries the
+corresponding source for its open source components.

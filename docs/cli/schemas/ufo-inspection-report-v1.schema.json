@@ -1,0 +1,583 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-inspection-report-v1.schema.json",
+  "title": "UFO inspection report v1",
+  "description": "One JSON Lines row per input from `ufo inspect --deep` and the MCP `inspect` tool: identity, detection, advisory warnings, and every hidden-content fact the shipped engines report.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "sequence",
+    "action",
+    "status",
+    "source",
+    "detection",
+    "warnings",
+    "metadata",
+    "flags",
+    "findings",
+    "textSelectable",
+    "container",
+    "notInspected",
+    "highestSeverity",
+    "code",
+    "message",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.inspection-report"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "engineVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "action": {
+      "const": "inspect"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "refused",
+        "failed"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "name",
+        "sizeBytes",
+        "lastModifiedMillis",
+        "sha256",
+        "stableDuringProcessing"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "lastModifiedMillis": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "sha256": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stableDuringProcessing": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "detection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resolvedKind",
+            "resolvedFormat",
+            "claimedExtension",
+            "claimedFormat",
+            "contentExtension",
+            "contentFormat",
+            "nameAndBytes"
+          ],
+          "properties": {
+            "resolvedKind": {
+              "enum": [
+                "pdf",
+                "image",
+                "audio",
+                "video",
+                "archive",
+                "web",
+                "office",
+                "markdown",
+                "sqlite",
+                "font",
+                "certificate",
+                "calendar",
+                "contact",
+                "email",
+                "spreadsheet",
+                "text",
+                "binary"
+              ]
+            },
+            "resolvedFormat": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "claimedExtension": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "claimedFormat": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "contentExtension": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "contentFormat": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "nameAndBytes": {
+              "enum": [
+                "match",
+                "mismatch",
+                "unknown"
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "warnings": {
+      "description": "Advisory signals read from the hashed bytes. They never change status; --fail-on selects which of them fail the batch.",
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 3,
+      "items": {
+        "enum": [
+          "name_content_mismatch",
+          "executable_content",
+          "truncated_or_damaged"
+        ]
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "maxProperties": 128,
+      "propertyNames": {
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "type_mismatch",
+          "encrypted",
+          "has_author",
+          "has_properties",
+          "has_comments",
+          "has_tracked_changes",
+          "has_hidden_text",
+          "has_speaker_notes",
+          "has_hidden_slides",
+          "has_hidden_sheets",
+          "has_hidden_rows_cols",
+          "has_macros",
+          "has_embedded_files",
+          "has_javascript",
+          "has_form_data",
+          "has_signatures",
+          "has_revision_history",
+          "has_hidden_layers",
+          "has_external_links",
+          "no_text_layer",
+          "has_exif",
+          "has_xmp",
+          "has_iptc",
+          "has_thumbnail",
+          "has_capture_time",
+          "has_gps",
+          "has_device_ids",
+          "has_trailing_data",
+          "has_attachments",
+          "header_mismatch",
+          "has_nested_archive",
+          "has_executable",
+          "unsafe_paths",
+          "suspicious_expansion",
+          "has_hidden_chars",
+          "has_bidi_controls",
+          "has_pii",
+          "has_secrets",
+          "has_injection_text"
+        ]
+      }
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "severity",
+          "code",
+          "title",
+          "count",
+          "detail",
+          "where",
+          "removable"
+        ],
+        "properties": {
+          "category": {
+            "enum": [
+              "privacy",
+              "hidden",
+              "security",
+              "integrity",
+              "info"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "count": {
+            "description": "How many of the thing `title` names were found. Always 1 or more: a finding is reported only when there is something to report, so a presence sentence beside a count of zero is never published. An engine whose primary unit counts zero while a residue is present (a comment part holding only its registered authors, hidden paragraph marks with no hidden run) reports the residue by name and counts the residue.",
+            "type": "integer",
+            "minimum": 1
+          },
+          "detail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "where": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "removable": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "textSelectable": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "container": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "format",
+            "entryCount",
+            "entries",
+            "entriesTruncated",
+            "nestedArchives",
+            "executables"
+          ],
+          "properties": {
+            "format": {
+              "type": "string"
+            },
+            "entryCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "entries": {
+              "type": "array",
+              "maxItems": 2000,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path",
+                  "sizeBytes",
+                  "compressedBytes",
+                  "isDirectory",
+                  "kind",
+                  "sha256",
+                  "hashed"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sizeBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "compressedBytes": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "isDirectory": {
+                    "type": "boolean"
+                  },
+                  "kind": {
+                    "enum": [
+                      "pdf", "image", "audio", "video", "archive", "web",
+                      "office", "markdown", "sqlite", "font", "certificate",
+                      "calendar", "contact", "email", "spreadsheet", "text",
+                      "binary", null
+                    ]
+                  },
+                  "sha256": {
+                    "description": "SHA-256 of the entry's whole uncompressed bytes, read on the same bounded pass that reads each entry's head. Null for a directory and for an entry a bound stopped; a partial read is never hashed.",
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "hashed": {
+                    "description": "True only when sha256 is the hash of the entry's whole bytes.",
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "entriesTruncated": {
+              "type": "boolean"
+            },
+            "nestedArchives": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "executables": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "notInspected": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "what",
+          "why"
+        ],
+        "properties": {
+          "what": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "highestSeverity": {
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 268435456
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "durationMillis": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": {
+      "const": "not_used"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "detection": {
+            "type": "object"
+          },
+          "code": {
+            "type": "null"
+          },
+          "message": {
+            "type": "null"
+          },
+          "source": {
+            "properties": {
+              "sha256": {
+                "type": "string"
+              },
+              "stableDuringProcessing": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "refused",
+              "failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-watch-event-v1.schema.json",
+  "title": "UFO watch event v1",
+  "description": "One line of a `ufo watch` ledger. The ledger is JSON Lines, append only and never rewritten: a run either created the file or resumed one whose last line parses, every line is flushed and fsynced before the next result is produced, and the same bytes are printed on standard output so a pipeline can follow the run. A run that opened a ledger writes one `started` line first and exactly one `stopped` line last.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "observedAt",
+    "event",
+    "path",
+    "sizeBytes",
+    "sha256",
+    "action",
+    "receipt"
+  ],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.watch-event" },
+    "schemaVersion": { "const": 1 },
+    "engineVersion": { "type": "string", "minLength": 1 },
+    "observedAt": {
+      "description": "When the line was written, in UTC to the millisecond.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "event": {
+      "description": "`started` and `stopped` bracket one run and describe the watched directory. `added` is the first time a file was seen stable, `changed` a file whose bytes are not the ones the ledger already reported for that path, and `removed` a path that had been reported and is gone.",
+      "enum": ["started", "added", "changed", "removed", "stopped"]
+    },
+    "path": {
+      "description": "The watched directory on a `started` or `stopped` line, and the file otherwise, canonicalized.",
+      "type": "string",
+      "minLength": 1
+    },
+    "sizeBytes": {
+      "description": "The file's size when it was hashed, the last reported size on a removal, and null on a `started` or `stopped` line.",
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "sha256": {
+      "description": "The file's SHA-256, taken only after it held the same size and modification time for one full interval; the last reported hash on a removal; null on a `started` or `stopped` line.",
+      "oneOf": [{ "type": "string", "pattern": "^[0-9a-f]{64}$" }, { "type": "null" }]
+    },
+    "action": {
+      "description": "The action this run puts every arriving or changing file through. `inspect` means `inspect --deep`.",
+      "enum": ["intake", "inspect", "report"]
+    },
+    "receipt": {
+      "description": "The whole receipt the action published for this file: an intake receipt or an inspection report. Null on a removal, which reads nothing, on a `started` or `stopped` line, and under `--action report`, where the folder report is published beside the ledger and named by `report` instead.",
+      "type": ["object", "null"]
+    },
+    "resumedFromSha256": {
+      "description": "On a `started` line only: the SHA-256 of the ledger's last line when this run resumed an existing ledger, and null when this run created it or found it empty.",
+      "oneOf": [{ "type": "string", "pattern": "^[0-9a-f]{64}$" }, { "type": "null" }]
+    },
+    "license": {
+      "description": "On a `started` line only: the licence this run is under, tier free and verified false when no licence file applied. It records a fact about the run and never marks, degrades or qualifies the work the ledger describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "report": {
+      "description": "Under `--action report` only: the folder report this event published, beside the ledger under a dated name of its own. Absent when the report run published nothing, and then `code` and `message` say why.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "format", "sizeBytes", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "format": { "enum": ["json", "markdown"] },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "stoppedBy": {
+      "description": "On a `stopped` line only: `once` for a run that finished its single scan, `signal` for SIGINT or SIGTERM, `fail_on` for the first gate that fired, and `refused` for a walk or a ledger that refused, whose `code` and `message` then say which bound or rule it was.",
+      "enum": ["once", "signal", "fail_on", "refused"]
+    },
+    "code": {
+      "description": "A refusal code, in the receipts' own vocabulary.",
+      "type": "string",
+      "minLength": 1
+    },
+    "message": {
+      "description": "The sentence that goes with `code`.",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "event": { "const": "started" } }, "required": ["event"] },
+      "then": { "required": ["resumedFromSha256"] },
+      "else": { "not": { "required": ["resumedFromSha256"] } }
+    },
+    {
+      "if": { "properties": { "event": { "const": "stopped" } }, "required": ["event"] },
+      "then": { "required": ["stoppedBy"] },
+      "else": { "not": { "required": ["stoppedBy"] } }
+    },
+    {
+      "if": {
+        "properties": { "event": { "enum": ["started", "stopped", "removed"] } },
+        "required": ["event"]
+      },
+      "then": { "properties": { "receipt": { "type": "null" } } }
+    }
+  ]
+}

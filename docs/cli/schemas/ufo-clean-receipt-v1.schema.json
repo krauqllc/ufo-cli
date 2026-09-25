@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-clean-receipt-v1.schema.json",
+  "title": "UFO clean receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "sequence",
+    "action",
+    "status",
+    "source",
+    "output",
+    "result",
+    "code",
+    "message",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.clean-receipt"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "engineVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "action": {
+      "const": "clean"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "refused",
+        "failed"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "name",
+        "sizeBytes",
+        "lastModifiedMillis",
+        "sha256",
+        "stableDuringProcessing"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "lastModifiedMillis": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "sha256": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stableDuringProcessing": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "output": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sizeBytes",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "removed",
+            "skipped",
+            "outputExtension"
+          ],
+          "properties": {
+            "engine": {
+              "enum": [
+                "office-clean",
+                "pdf-clean",
+                "image-scrub"
+              ]
+            },
+            "removed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "skipped": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "category",
+                  "reason"
+                ],
+                "properties": {
+                  "category": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "outputExtension": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]{1,16}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 67108864
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "durationMillis": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": {
+      "const": "not_used"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object"
+          },
+          "output": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "sha256": {
+                "type": "string"
+              },
+              "stableDuringProcessing": {
+                "const": true
+              }
+            }
+          },
+          "code": {
+            "type": "null"
+          },
+          "message": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "refused",
+              "failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "output": {
+            "type": "null"
+          },
+          "result": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-find-results-v1.schema.json",
+  "title": "UFO find results v1",
+  "description": "Where a needle sits in one source revision, in the coordinates the edit verbs consume. Emitted by `ufo find` on standard output, written to the file named by -o, and returned by the MCP find tool. A hit says whether its coordinate is editable; a complex DOCX paragraph, a formula cell, a shape this surface does not edit and a PDF page are read-only. A recognized hit is a line an offline recognizer read from pixels, in a picture or in a page that carries no text of its own; it is approximate and is never an edit coordinate. Hits are in document order.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "source", "needle", "total", "truncated", "hits", "scope"],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.find-results" },
+    "schemaVersion": { "const": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sha256"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "needle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "ignoreCase", "regex"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "ignoreCase": { "type": "boolean" },
+        "regex": { "type": "boolean" }
+      }
+    },
+    "total": {
+      "description": "Matches found before the limit was applied, counted no further than 100000.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "truncated": {
+      "description": "True when more matches were found than the limit returned.",
+      "type": "boolean"
+    },
+    "hits": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": { "$ref": "#/$defs/hit" }
+    },
+    "ocr": {
+      "description": "Present exactly when this search read pixels: the engine, the pages it read, the density, its mean confidence and the sentence that says recognized text is approximate. Absent when every hit came from text the file stores.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine", "language", "models", "pages", "pagesAvailable", "dpi", "truncated", "stoppedBy", "meanConfidence", "approximate", "notice"],
+      "properties": {
+        "engine": { "type": "string", "pattern": "^tesseract [0-9][0-9A-Za-z.+-]{0,31}$" },
+        "language": { "type": "string", "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$" },
+        "models": { "type": "string", "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$" },
+        "pages": { "type": "array", "maxItems": 200, "items": { "type": "integer", "minimum": 1 } },
+        "pagesAvailable": { "type": "integer", "minimum": 0 },
+        "dpi": { "oneOf": [{ "type": "integer", "minimum": 72, "maximum": 400 }, { "type": "null" }] },
+        "truncated": { "type": "boolean" },
+        "stoppedBy": { "oneOf": [{ "enum": ["page-bound", "deadline"] }, { "type": "null" }] },
+        "meanConfidence": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "approximate": { "const": true },
+        "notice": { "const": "OCR text is approximate: it is what a recognizer read from pixels, not a text layer the file carries." }
+      }
+    },
+    "scope": {
+      "description": "What this family's search reads and what it does not, in the source's own words.",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "snippet": { "type": "string", "minLength": 1, "maxLength": 160, "pattern": "^[^\\n\\r]*$" },
+    "offset": { "type": "integer", "minimum": 0 },
+    "length": { "type": "integer", "minimum": 1 },
+    "hit": {
+      "oneOf": [
+        { "$ref": "#/$defs/paragraphHit" },
+        { "$ref": "#/$defs/cellHit" },
+        { "$ref": "#/$defs/shapeHit" },
+        { "$ref": "#/$defs/pageHit" },
+        { "$ref": "#/$defs/recognizedHit" },
+        { "$ref": "#/$defs/lineHit" },
+        { "$ref": "#/$defs/fieldHit" }
+      ]
+    },
+    "paragraphHit": {
+      "description": "A DOCX paragraph, addressed by its story and the same zero-based index a docx-paragraphs read of that story reports.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "story", "index", "table", "offset", "length", "snippet", "editable"],
+      "properties": {
+        "kind": { "const": "paragraph" },
+        "story": { "type": "string", "pattern": "^(main|(header|footer):[1-9][0-9]{0,3})$" },
+        "index": { "type": "integer", "minimum": 0 },
+        "table": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["table", "row", "cell"],
+              "properties": {
+                "table": { "type": "integer", "minimum": 0 },
+                "row": { "type": "integer", "minimum": 0 },
+                "cell": { "type": "integer", "minimum": 0 }
+              }
+            },
+            { "type": "null" }
+          ]
+        },
+        "offset": { "$ref": "#/$defs/offset" },
+        "length": { "$ref": "#/$defs/length" },
+        "snippet": { "$ref": "#/$defs/snippet" },
+        "editable": { "type": "boolean" }
+      }
+    },
+    "cellHit": {
+      "description": "One stored worksheet cell. A formula cell matches on its formula text and its value as saved and is never editable here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "sheet", "ref", "row", "column", "type", "snippet", "editable"],
+      "properties": {
+        "kind": { "const": "cell" },
+        "sheet": { "type": "string", "minLength": 1 },
+        "ref": { "type": "string", "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$" },
+        "row": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "type": { "enum": ["string", "number", "boolean", "error", "date", "formula", "empty"] },
+        "snippet": { "$ref": "#/$defs/snippet" },
+        "editable": { "type": "boolean" }
+      }
+    },
+    "shapeHit": {
+      "description": "One PPTX slide paragraph. shapeId is null for speaker notes and for text this surface reports but does not edit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "slide", "shapeId", "index", "notes", "snippet", "editable"],
+      "properties": {
+        "kind": { "const": "shape" },
+        "slide": { "type": "integer", "minimum": 1 },
+        "shapeId": { "type": ["integer", "null"], "minimum": 0 },
+        "index": { "type": "integer", "minimum": 0 },
+        "notes": { "type": "boolean" },
+        "snippet": { "$ref": "#/$defs/snippet" },
+        "editable": { "type": "boolean" }
+      }
+    },
+    "pageHit": {
+      "description": "One PDF page's text layer. A page coordinate is for reading; this surface does not write PDF text.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "page", "offset", "length", "snippet", "editable"],
+      "properties": {
+        "kind": { "const": "page" },
+        "page": { "type": "integer", "minimum": 1 },
+        "offset": { "$ref": "#/$defs/offset" },
+        "length": { "$ref": "#/$defs/length" },
+        "snippet": { "$ref": "#/$defs/snippet" },
+        "editable": { "const": false }
+      }
+    },
+    "recognizedHit": {
+      "description": "One line an offline recognizer read from pixels: page 1 for a picture, the page's own number for a scanned page, and the one-based line within what the engine read there. The offset is into that line. It is never editable and never an edit coordinate, because the file stores pixels and this coordinate addresses a reading of them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "page", "line", "offset", "length", "confidence", "snippet", "editable"],
+      "properties": {
+        "kind": { "const": "recognized" },
+        "page": { "type": "integer", "minimum": 1 },
+        "line": { "type": "integer", "minimum": 1 },
+        "offset": { "$ref": "#/$defs/offset" },
+        "length": { "$ref": "#/$defs/length" },
+        "confidence": {
+          "description": "The engine's mean confidence for the page this line came from, 0 to 100. A low value is a warning, not a refusal.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "snippet": { "$ref": "#/$defs/snippet" },
+        "editable": { "const": false }
+      }
+    },
+    "lineHit": {
+      "description": "One whole line of a plain text, code, data or Markdown file, by one-based number.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "line", "offset", "length", "snippet", "editable"],
+      "properties": {
+        "kind": { "const": "line" },
+        "line": { "type": "integer", "minimum": 1 },
+        "offset": { "$ref": "#/$defs/offset" },
+        "length": { "$ref": "#/$defs/length" },
+        "snippet": { "$ref": "#/$defs/snippet" },
+        "editable": { "type": "boolean" }
+      }
+    },
+    "fieldHit": {
+      "description": "One field of a CSV or TSV file, by the one-based row and column `edit fields` addresses as RnCm. The offset counts characters of the field's value, quotes removed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "field", "row", "column", "offset", "length", "snippet", "editable"],
+      "properties": {
+        "kind": { "const": "field" },
+        "field": { "type": "string", "pattern": "^R[1-9][0-9]{0,5}C[1-9][0-9]{0,3}$" },
+        "row": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "offset": { "$ref": "#/$defs/offset" },
+        "length": { "$ref": "#/$defs/length" },
+        "snippet": { "$ref": "#/$defs/snippet" },
+        "editable": { "const": true }
+      }
+    }
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-compatibility-audit-summary-v2.schema.json",
+  "title": "UFO compatibility audit summary v2",
+  "description": "A content-bound summary of intake and deep-inspection evidence for one private compatibility audit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "auditOutcome",
+    "fileCount",
+    "totalBytes",
+    "statusCounts",
+    "resolvedKindCounts",
+    "resolvedFormatCounts",
+    "nameAndBytesCounts",
+    "codeCounts",
+    "warningCounts",
+    "inspectionStatusCounts",
+    "inspectionFlagCounts",
+    "inspectionFindingCounts",
+    "inspectionHighestSeverityCounts",
+    "inspectionNotInspectedCounts",
+    "limits",
+    "artifact",
+    "inputManifestSha256",
+    "stableResultsSha256",
+    "receiptsSha256",
+    "inspectionReportsSha256",
+    "privacy"
+  ],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.compatibility-audit-summary" },
+    "schemaVersion": { "const": 2 },
+    "engineVersion": { "type": "string", "minLength": 1 },
+    "auditOutcome": { "enum": ["all_clear", "review_required"] },
+    "fileCount": { "type": "integer", "minimum": 1, "maximum": 20000 },
+    "totalBytes": { "type": "integer", "minimum": 0 },
+    "statusCounts": { "$ref": "#/$defs/intakeStatusCounts" },
+    "resolvedKindCounts": { "$ref": "#/$defs/counts" },
+    "resolvedFormatCounts": { "$ref": "#/$defs/counts" },
+    "nameAndBytesCounts": { "$ref": "#/$defs/counts" },
+    "codeCounts": { "$ref": "#/$defs/counts" },
+    "warningCounts": { "$ref": "#/$defs/counts" },
+    "inspectionStatusCounts": { "$ref": "#/$defs/inspectionStatusCounts" },
+    "inspectionFlagCounts": { "$ref": "#/$defs/counts" },
+    "inspectionFindingCounts": { "$ref": "#/$defs/counts" },
+    "inspectionHighestSeverityCounts": { "$ref": "#/$defs/severityCounts" },
+    "inspectionNotInspectedCounts": { "$ref": "#/$defs/counts" },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB",
+        "commandTimeoutSeconds",
+        "jobs"
+      ],
+      "properties": {
+        "maxSourceBytes": { "const": 268435456 },
+        "workerTimeoutMillis": { "type": "integer", "minimum": 1, "maximum": 300000 },
+        "workerMaxHeapMiB": { "type": "integer", "minimum": 32, "maximum": 2048 },
+        "commandTimeoutSeconds": { "type": "integer", "minimum": 1 },
+        "jobs": { "type": "integer", "minimum": 1, "maximum": 64 }
+      }
+    },
+    "artifact": {
+      "oneOf": [
+        { "$ref": "#/$defs/launcherArtifact" },
+        { "$ref": "#/$defs/containerArtifact" }
+      ]
+    },
+    "inputManifestSha256": { "$ref": "#/$defs/sha256" },
+    "stableResultsSha256": { "$ref": "#/$defs/sha256" },
+    "receiptsSha256": { "$ref": "#/$defs/sha256" },
+    "inspectionReportsSha256": { "$ref": "#/$defs/sha256" },
+    "privacy": {
+      "const": "Reports contain file names, parser outcomes, metadata, findings, and archive details; raw reports also contain processed paths and may repeat source content fragments."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "auditOutcome": { "const": "all_clear" } },
+        "required": ["auditOutcome"]
+      },
+      "then": {
+        "properties": {
+          "statusCounts": {
+            "properties": {
+              "accepted": { "minimum": 1 },
+              "limited": { "const": 0 },
+              "refused": { "const": 0 },
+              "failed": { "const": 0 }
+            }
+          },
+          "warningCounts": { "maxProperties": 0 },
+          "inspectionStatusCounts": {
+            "properties": {
+              "completed": { "minimum": 1 },
+              "refused": { "const": 0 },
+              "failed": { "const": 0 }
+            }
+          },
+          "inspectionFlagCounts": { "maxProperties": 0 },
+          "inspectionFindingCounts": { "maxProperties": 0 },
+          "inspectionNotInspectedCounts": { "maxProperties": 0 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "counts": {
+      "type": "object",
+      "propertyNames": { "minLength": 1 },
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "intakeStatusCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted", "limited", "refused", "failed"],
+      "properties": {
+        "accepted": { "type": "integer", "minimum": 0 },
+        "limited": { "type": "integer", "minimum": 0 },
+        "refused": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "inspectionStatusCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed", "refused", "failed"],
+      "properties": {
+        "completed": { "type": "integer", "minimum": 0 },
+        "refused": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "severityCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["none", "low", "medium", "high"],
+      "properties": {
+        "none": { "type": "integer", "minimum": 0 },
+        "low": { "type": "integer", "minimum": 0 },
+        "medium": { "type": "integer", "minimum": 0 },
+        "high": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "launcherArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "surface",
+        "launcher",
+        "appImageRoot",
+        "appImageTreeSha256",
+        "appImageTreeEntries",
+        "appImageBytes"
+      ],
+      "properties": {
+        "surface": { "const": "launcher" },
+        "launcher": { "type": "string", "minLength": 1 },
+        "appImageRoot": { "type": "string", "minLength": 1 },
+        "appImageTreeSha256": { "$ref": "#/$defs/sha256" },
+        "appImageTreeEntries": { "type": "integer", "minimum": 1, "maximum": 20000 },
+        "appImageBytes": { "type": "integer", "minimum": 0, "maximum": 1073741824 }
+      }
+    },
+    "containerArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface", "image", "imageId"],
+      "properties": {
+        "surface": { "const": "container" },
+        "image": { "type": "string", "minLength": 1 },
+        "imageId": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

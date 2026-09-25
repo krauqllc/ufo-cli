@@ -1,0 +1,617 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-docx-paragraphs-v1.schema.json",
+  "title": "UFO DOCX paragraph page v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "source",
+    "story",
+    "part",
+    "offset",
+    "totalParagraphs",
+    "nextOffset",
+    "partial",
+    "scope",
+    "outline",
+    "outlineComplete",
+    "comments",
+    "commentsComplete",
+    "footnotes",
+    "footnotesComplete",
+    "pictures",
+    "picturesComplete",
+    "charts",
+    "chartsComplete",
+    "paragraphs"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.docx-paragraphs"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "story": {
+      "description": "The story this page read: main, header:N, footer:N or footnote:N, with N counting the header and footer parts the sections reference in document order and the footnotes of word/footnotes.xml, separator notes skipped.",
+      "type": "string",
+      "pattern": "^(main|(header|footer|footnote):[1-9][0-9]{0,3})$"
+    },
+    "part": {
+      "description": "The package part the story resolved to, such as word/document.xml or word/header1.xml.",
+      "type": "string",
+      "minLength": 1
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20000
+    },
+    "totalParagraphs": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20000
+    },
+    "nextOffset": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1,
+      "maximum": 19999
+    },
+    "partial": {
+      "type": "boolean"
+    },
+    "scope": {
+      "const": "plain paragraphs of the selected story (main by default, or a header, a footer or one footnote); other stories, fields, drawings and complex inline content are not read"
+    },
+    "outline": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "level",
+          "text"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 19999
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      }
+    },
+    "outlineComplete": {
+      "type": "boolean"
+    },
+    "comments": {
+      "description": "Every comment of this story, main-story only, capped at 500. A header or footer page lists none, because comments anchor in the main story.",
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "author",
+          "date",
+          "text",
+          "paragraph",
+          "resolved",
+          "parent"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "author": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "paragraph": {
+            "description": "The zero-based paragraph the comment anchors to, or null when the anchor cannot be resolved.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "resolved": {
+            "description": "True only when word/commentsExtended.xml marks the comment done; false when that part is absent.",
+            "type": "boolean"
+          },
+          "parent": {
+            "description": "The comment this one replies to, when w15:paraIdParent resolves to another comment; else null.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "commentsComplete": {
+      "description": "False when the comment list was cut at 500 or the comment model could not be read.",
+      "type": "boolean"
+    },
+    "footnotes": {
+      "description": "Every footnote of the document, separator notes skipped; a main-story page only.",
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "paragraphs",
+          "referencedFrom"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "paragraphs": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "string",
+              "maxLength": 16384
+            }
+          },
+          "referencedFrom": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 19999
+          }
+        }
+      }
+    },
+    "footnotesComplete": {
+      "type": "boolean"
+    },
+    "pictures": {
+      "description": "Every picture this story draws, in document order, capped at 200; the media part is what edit image-replace --target names.",
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/$defs/picture"
+      }
+    },
+    "picturesComplete": {
+      "description": "False when the picture list was cut at 200 or could not be read.",
+      "type": "boolean"
+    },
+    "charts": {
+      "description": "Every chart this story shows, in document order, capped at 50; the index is what edit chart --chart names.",
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "$ref": "#/$defs/chart"
+      }
+    },
+    "chartsComplete": {
+      "description": "False when the chart list was cut at 50 or could not be read.",
+      "type": "boolean"
+    },
+    "paragraphs": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "text",
+          "inTable",
+          "table",
+          "style",
+          "limitation",
+          "links"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 19999
+          },
+          "text": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 16384
+          },
+          "inTable": {
+            "type": "boolean"
+          },
+          "table": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "table",
+              "row",
+              "cell"
+            ],
+            "properties": {
+              "table": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 999
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9999
+              },
+              "cell": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9999
+              }
+            }
+          },
+          "style": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "limitation": {
+            "enum": [
+              null,
+              "noncanonical_main_part",
+              "complex_paragraph",
+              "paragraph_text_limit"
+            ]
+          },
+          "links": {
+            "description": "Every hyperlink the paragraph carries, in document order.",
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "text",
+                "target",
+                "relationship"
+              ],
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "maxLength": 16384
+                },
+                "target": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 2048
+                },
+                "relationship": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "limitation": {
+                  "type": "null"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "text": {
+                  "type": "string"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "text": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "chart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "part",
+        "title",
+        "type",
+        "categories",
+        "series",
+        "embeddedWorkbook"
+      ],
+      "properties": {
+        "index": {
+          "description": "The one-based position of the chart in the story or slide, which edit chart --chart names.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "part": {
+          "description": "The chart part, such as ppt/charts/chart1.xml.",
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 512
+        },
+        "type": {
+          "description": "The data model the chart draws; other means this build does not edit it.",
+          "enum": [
+            "bar",
+            "line",
+            "pie",
+            "area",
+            "scatter",
+            "other"
+          ]
+        },
+        "categories": {
+          "description": "The category axis as the chart's own c:strCache spells it, capped at 500.",
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "type": "string",
+            "maxLength": 512
+          }
+        },
+        "series": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "name",
+              "values",
+              "formulaRef"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "name": {
+                "description": "The series name its c:tx cache holds, or null when it has none.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "values": {
+                "description": "The series values as its own c:numCache spells them, capped at 500; a gap is null.",
+                "type": "array",
+                "maxItems": 500,
+                "items": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "formulaRef": {
+                "description": "The c:f workbook reference the values come from, such as Sheet1!$B$2:$B$5, or null.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "embeddedWorkbook": {
+          "description": "The embedded workbook part the chart's Edit Data opens, or null when it has none.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "picture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "part",
+        "relationship",
+        "paragraph",
+        "shapeId",
+        "widthEmu",
+        "heightEmu",
+        "pixelWidth",
+        "pixelHeight",
+        "name",
+        "alt"
+      ],
+      "properties": {
+        "part": {
+          "description": "The media part the drawing shows, such as word/media/image1.png.",
+          "type": "string",
+          "minLength": 1
+        },
+        "relationship": {
+          "description": "The relationship id the drawing embeds, such as rId5.",
+          "type": "string",
+          "minLength": 1
+        },
+        "paragraph": {
+          "description": "The zero-based paragraph that holds the drawing, or null when it is not in one.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "shapeId": {
+          "description": "The slide shape id, always null in a Word story.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "widthEmu": {
+          "description": "The drawn width in EMU, or null when the drawing declares none.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "heightEmu": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "pixelWidth": {
+          "description": "The stored picture's own width in pixels, read from the PNG or JPEG header; null for any other stored format.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "pixelHeight": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "alt": {
+          "description": "The drawing's accessibility text, or null when it carries none.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "paragraphs": {
+            "contains": {
+              "type": "object",
+              "required": [
+                "limitation"
+              ],
+              "properties": {
+                "limitation": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "partial": {
+            "const": true
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "partial": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,382 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-license-status-v1.schema.json",
+  "title": "UFO license status v1",
+  "description": "The document ufo license status, ufo license install and ufo license remove print. Verification is local: no network call, no activation and no telemetry are involved in producing it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "action",
+    "status",
+    "code",
+    "message",
+    "target",
+    "license",
+    "verification",
+    "detail",
+    "searched",
+    "bounds",
+    "network"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.license-status"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "engineVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "enum": [
+        "status",
+        "install",
+        "remove"
+      ]
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "refused"
+      ]
+    },
+    "code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target": {
+      "description": "The file install wrote or remove deleted, null for status.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sizeBytes",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "license": {
+      "$ref": "#/$defs/license"
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted",
+        "code",
+        "standing",
+        "releasedOn",
+        "origin",
+        "checkedAt",
+        "clock"
+      ],
+      "properties": {
+        "accepted": {
+          "type": "boolean"
+        },
+        "code": {
+          "description": "Why a licence file that was found was not accepted.",
+          "oneOf": [
+            {
+              "enum": [
+                "license_malformed",
+                "license_unknown_key",
+                "license_signature_invalid",
+                "license_not_yet_issued",
+                "license_file_missing"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "standing": {
+          "oneOf": [
+            {
+              "enum": [
+                "current",
+                "grace",
+                "kept",
+                "lapsed"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "releasedOn": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The day this build's source was released, which decides whether a lapsed licence keeps it; null outside a packaged build."
+        },
+        "origin": {
+          "enum": [
+            "none",
+            "option",
+            "environment",
+            "user-config",
+            "system-config"
+          ]
+        },
+        "checkedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clock": {
+          "const": "local"
+        }
+      }
+    },
+    "detail": {
+      "description": "The rest of an accepted licence's record. Null when no licence was accepted.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "people",
+            "orderReference",
+            "issuedAt",
+            "graceThrough",
+            "graceDays",
+            "subscribedSince",
+            "keptReleasesThrough"
+          ],
+          "properties": {
+            "people": {
+              "type": "string",
+              "minLength": 1
+            },
+            "orderReference": {
+              "type": "string",
+              "minLength": 1
+            },
+            "issuedAt": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "graceThrough": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "graceDays": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "subscribedSince": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The first day of the continuous paid subscription; null in a version 1 licence."
+            },
+            "keptReleasesThrough": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Once the subscription has run twelve consecutive months, the paid through date: every release published on or before it keeps the paid tier after the licence lapses. Null before then."
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "searched": {
+      "description": "Every path the resolver would try, in order.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "origin",
+          "path",
+          "exists",
+          "used"
+        ],
+        "properties": {
+          "origin": {
+            "enum": [
+              "environment",
+              "user-config",
+              "system-config"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "exists": {
+            "type": "boolean"
+          },
+          "used": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "bounds": {
+      "$ref": "#/$defs/bounds"
+    },
+    "network": {
+      "const": "not_used"
+    }
+  },
+  "$defs": {
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tier",
+        "organization",
+        "expiresAt",
+        "keyId",
+        "source",
+        "verified",
+        "note"
+      ],
+      "properties": {
+        "tier": {
+          "enum": [
+            "free",
+            "organization-50",
+            "organization-500",
+            "organization-unbounded"
+          ]
+        },
+        "organization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiresAt": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "keyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tier",
+        "people",
+        "batchSteps",
+        "folderFiles",
+        "jobs",
+        "mcpConcurrentRequests"
+      ],
+      "properties": {
+        "tier": {
+          "enum": [
+            "free",
+            "organization-50",
+            "organization-500",
+            "organization-unbounded"
+          ]
+        },
+        "people": {
+          "type": "string",
+          "minLength": 1
+        },
+        "batchSteps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "folderFiles": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "jobs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mcpConcurrentRequests": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

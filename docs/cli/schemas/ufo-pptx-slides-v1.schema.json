@@ -1,0 +1,506 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-pptx-slides-v1.schema.json",
+  "title": "UFO PPTX slide inventory and slide text v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "source",
+    "slides",
+    "selection",
+    "partial",
+    "scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.pptx-slides"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "part",
+          "notesPart",
+          "plainTextShapes"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          },
+          "part": {
+            "type": "string",
+            "minLength": 1
+          },
+          "notesPart": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "plainTextShapes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "selection": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "slide",
+        "part",
+        "shapes",
+        "other",
+        "notes",
+        "pictures",
+        "picturesComplete",
+        "charts",
+        "chartsComplete",
+        "tables",
+        "tablesComplete"
+      ],
+      "properties": {
+        "slide": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "part": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shapes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "name",
+              "placeholder",
+              "paragraphs"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "placeholder": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "paragraphs": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/paragraph"
+                }
+              }
+            }
+          }
+        },
+        "other": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "text",
+              "limitation"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 16384
+              },
+              "limitation": {
+                "enum": [
+                  "not_a_plain_text_shape"
+                ]
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "part",
+            "paragraphs"
+          ],
+          "properties": {
+            "part": {
+              "type": "string",
+              "minLength": 1
+            },
+            "paragraphs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/paragraph"
+              }
+            }
+          }
+        },
+        "pictures": {
+          "description": "Every picture this slide draws, in document order, capped at 200; the media part is what edit image-replace --target names.",
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/$defs/picture"
+          }
+        },
+        "picturesComplete": {
+          "description": "False when the picture list was cut at 200 or could not be read.",
+          "type": "boolean"
+        },
+        "charts": {
+          "description": "Every chart this slide shows, in document order, capped at 50; the index is what edit chart --chart names.",
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/chart"
+          }
+        },
+        "chartsComplete": {
+          "description": "False when the chart list was cut at 50 or could not be read.",
+          "type": "boolean"
+        },
+        "tables": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "shapeId",
+              "rows",
+              "columns",
+              "cells"
+            ],
+            "properties": {
+              "shapeId": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "rows": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "columns": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cells": {
+                "type": "array",
+                "maxItems": 2000,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "row",
+                    "column",
+                    "text",
+                    "editable",
+                    "merged"
+                  ],
+                  "properties": {
+                    "row": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "column": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "text": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "editable": {
+                      "type": "boolean"
+                    },
+                    "merged": {
+                      "description": "True for a cell that spans a range and for every cell a merge swallowed.",
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tablesComplete": {
+          "type": "boolean"
+        }
+      }
+    },
+    "partial": {
+      "type": "boolean"
+    },
+    "scope": {
+      "const": "plain text shapes and speaker notes by paragraph index; tables, groups, charts and SmartArt text are listed as gaps and are not editable here (a table's cells are also listed by row and column with whether each is part of a merge, and edit slide-table writes and merges those); layout, placeholders and formatting are preserved"
+    }
+  },
+  "$defs": {
+    "chart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "part",
+        "title",
+        "type",
+        "categories",
+        "series",
+        "embeddedWorkbook"
+      ],
+      "properties": {
+        "index": {
+          "description": "The one-based position of the chart in the story or slide, which edit chart --chart names.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "part": {
+          "description": "The chart part, such as ppt/charts/chart1.xml.",
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 512
+        },
+        "type": {
+          "description": "The data model the chart draws; other means this build does not edit it.",
+          "enum": [
+            "bar",
+            "line",
+            "pie",
+            "area",
+            "scatter",
+            "other"
+          ]
+        },
+        "categories": {
+          "description": "The category axis as the chart's own c:strCache spells it, capped at 500.",
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "type": "string",
+            "maxLength": 512
+          }
+        },
+        "series": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "name",
+              "values",
+              "formulaRef"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "name": {
+                "description": "The series name its c:tx cache holds, or null when it has none.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "values": {
+                "description": "The series values as its own c:numCache spells them, capped at 500; a gap is null.",
+                "type": "array",
+                "maxItems": 500,
+                "items": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "formulaRef": {
+                "description": "The c:f workbook reference the values come from, such as Sheet1!$B$2:$B$5, or null.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "embeddedWorkbook": {
+          "description": "The embedded workbook part the chart's Edit Data opens, or null when it has none.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "picture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "part",
+        "relationship",
+        "paragraph",
+        "shapeId",
+        "widthEmu",
+        "heightEmu",
+        "pixelWidth",
+        "pixelHeight",
+        "name",
+        "alt"
+      ],
+      "properties": {
+        "part": {
+          "description": "The media part the drawing shows, such as ppt/media/image1.png.",
+          "type": "string",
+          "minLength": 1
+        },
+        "relationship": {
+          "description": "The relationship id the drawing embeds, such as rId5.",
+          "type": "string",
+          "minLength": 1
+        },
+        "paragraph": {
+          "description": "The Word paragraph index, always null on a slide.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "shapeId": {
+          "description": "The slide shape id that draws the picture, or null when the shape declares none.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "widthEmu": {
+          "description": "The drawn width in EMU, or null when the drawing declares none.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "heightEmu": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "pixelWidth": {
+          "description": "The stored picture's own width in pixels, read from the PNG or JPEG header; null for any other stored format.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "pixelHeight": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "alt": {
+          "description": "The drawing's accessibility text, or null when it carries none.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "text"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 16384
+        }
+      }
+    }
+  }
+}

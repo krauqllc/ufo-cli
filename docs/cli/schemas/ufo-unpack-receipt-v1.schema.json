@@ -1,0 +1,507 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-unpack-receipt-v1.schema.json",
+  "title": "UFO unpack receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "action",
+    "status",
+    "source",
+    "destination",
+    "preflight",
+    "result",
+    "limits",
+    "durationMillis",
+    "network",
+    "code",
+    "message"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.unpack-receipt"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "engineVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "const": "unpack"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "refused",
+        "failed"
+      ]
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "destination": {
+      "$ref": "#/$defs/destination"
+    },
+    "preflight": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/preflight"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "result": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/result"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "limits": {
+      "$ref": "#/$defs/limits"
+    },
+    "durationMillis": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": {
+      "const": "not_used"
+    },
+    "code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "name",
+        "sizeBytes",
+        "lastModifiedMillis",
+        "sha256",
+        "stableDuringProcessing"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "lastModifiedMillis": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "sha256": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stableDuringProcessing": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "published"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "published": {
+          "type": "boolean"
+        }
+      }
+    },
+    "warning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "count",
+        "files",
+        "ratio"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "nothing_selected",
+            "unsafe_entries",
+            "unknown_size",
+            "nested_archives",
+            "suspicious_expansion",
+            "may_not_fit"
+          ]
+        },
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "files": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "ratio": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files",
+        "directories",
+        "unknownSizeFiles",
+        "knownBytes",
+        "nestedArchives",
+        "nestedArchivePolicy",
+        "warnings"
+      ],
+      "properties": {
+        "files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directories": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknownSizeFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "knownBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nestedArchives": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nestedArchivePolicy": {
+          "const": "keep_as_files"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/warning"
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sizeBytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filesExtracted",
+        "directoriesCreated",
+        "entriesSkipped",
+        "bytesWritten",
+        "selection",
+        "outputManifestSha256",
+        "outputs"
+      ],
+      "properties": {
+        "filesExtracted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directoriesCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entriesSkipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytesWritten": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selection": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "only",
+                "matchedEntries"
+              ],
+              "properties": {
+                "only": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 200,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "matchedEntries": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2000
+                }
+              }
+            }
+          ]
+        },
+        "outputManifestSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "outputs": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/output"
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxEntries",
+        "maxTotalOutputBytes",
+        "maxSingleOutputBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 268435456
+        },
+        "maxEntries": {
+          "const": 20000
+        },
+        "maxTotalOutputBytes": {
+          "const": 2147483648
+        },
+        "maxSingleOutputBytes": {
+          "const": 536870912
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "properties": {
+              "sha256": {
+                "type": "string"
+              },
+              "stableDuringProcessing": {
+                "const": true
+              }
+            }
+          },
+          "destination": {
+            "properties": {
+              "published": {
+                "const": true
+              }
+            }
+          },
+          "preflight": {
+            "type": "object"
+          },
+          "result": {
+            "type": "object"
+          },
+          "code": {
+            "type": "null"
+          },
+          "message": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "refused",
+              "failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "destination": {
+            "properties": {
+              "published": {
+                "const": false
+              }
+            }
+          },
+          "result": {
+            "type": "null"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "code": {
+            "const": "source_changed_during_processing"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "properties": {
+              "stableDuringProcessing": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

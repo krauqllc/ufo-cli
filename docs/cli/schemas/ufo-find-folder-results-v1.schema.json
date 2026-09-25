@@ -1,0 +1,1016 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-find-folder-results-v1.schema.json",
+  "title": "UFO find folder results v1",
+  "description": "Where a needle sits across a whole folder, from `ufo find` over a directory or several inputs. The same bounded walk `ufo report` uses finds the files; each one is either searched by the same structured read the single-file form uses, rejected by the byte pre-filter that proved it cannot match, or skipped with a reason. The document is printed on standard output and, with -o, published without replacement; the published copy carries `output` as null because a file cannot name its own hash.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "action",
+    "status",
+    "roots",
+    "output",
+    "needle",
+    "totals",
+    "files",
+    "notInspected",
+    "code",
+    "message",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.find-folder-results"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "engineVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "const": "find"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "refused"
+      ]
+    },
+    "roots": {
+      "description": "The files and directories named on the command line, canonicalized.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "output": {
+      "description": "The published document. Null in the published copy itself, on a refusal, and whenever -o was not given.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "format",
+        "sizeBytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "const": "json"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "needle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "ignoreCase",
+        "regex"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "ignoreCase": {
+          "type": "boolean"
+        },
+        "regex": {
+          "type": "boolean"
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roots",
+        "filesWalked",
+        "filesSearched",
+        "filesRejected",
+        "filesSkipped",
+        "filesWithHits",
+        "filesWithoutHits",
+        "bytesWalked",
+        "matches",
+        "hits",
+        "truncated"
+      ],
+      "properties": {
+        "roots": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "filesWalked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "filesSearched": {
+          "description": "Files a structured read answered, the ones the pre-filter could not rule out.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "filesRejected": {
+          "description": "Files the pre-filter proved cannot hold the needle, so no read ran.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "filesSkipped": {
+          "description": "Files not searched at all: an unaddressed family, a bound, or an engine refusal.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "filesWithHits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "filesWithoutHits": {
+          "description": "Files answered with no match, whether by a read or by the pre-filter.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytesWalked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "matches": {
+          "description": "Every match in every searched file, before --limit chose what to carry.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "hits": {
+          "description": "Hits this document carries; --limit is spent across the folder in walk order.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "truncated": {
+          "description": "True when a match was counted but not carried.",
+          "type": "boolean"
+        }
+      }
+    },
+    "files": {
+      "description": "One row per walked file, in walk order: depth first and name ordered.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "notInspected": {
+      "description": "Every gap the walk or an engine reported, so silence is never read as a clean verdict.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "what",
+          "why"
+        ],
+        "properties": {
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "what": {
+            "type": "string",
+            "minLength": 1
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB",
+        "maxFiles",
+        "maxBytes",
+        "maxDepth",
+        "jobs",
+        "limit"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxFiles": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxDepth": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "jobs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "limit": {
+          "description": "Hits this run would carry across the whole folder.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      }
+    },
+    "durationMillis": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": {
+      "const": "not_used"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "code": {
+            "type": "null"
+          },
+          "message": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "refused"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "output": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "name",
+        "sizeBytes",
+        "status",
+        "prefiltered",
+        "code",
+        "message",
+        "results"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "description": "searched: a structured read answered. rejected: the pre-filter proved no match. skipped: not searched, with a code saying why.",
+          "enum": [
+            "searched",
+            "rejected",
+            "skipped"
+          ]
+        },
+        "prefiltered": {
+          "description": "True only on a rejected row: the answer cost no read.",
+          "type": "boolean"
+        },
+        "code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "results": {
+          "oneOf": [
+            {
+              "description": "Where a needle sits in one source revision, in the coordinates the edit verbs consume. Emitted by `ufo find` on standard output, written to the file named by -o, and returned by the MCP find tool. A hit says whether its coordinate is editable; a complex DOCX paragraph, a formula cell, a shape this surface does not edit, a PDF page and every recognized line are read-only. Hits are in document order.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "schema",
+                "schemaVersion",
+                "source",
+                "needle",
+                "total",
+                "truncated",
+                "hits",
+                "scope"
+              ],
+              "properties": {
+                "schema": {
+                  "const": "com.krauq.ufo.find-results"
+                },
+                "schemaVersion": {
+                  "const": 1
+                },
+                "source": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "name",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  }
+                },
+                "needle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text",
+                    "ignoreCase",
+                    "regex"
+                  ],
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "ignoreCase": {
+                      "type": "boolean"
+                    },
+                    "regex": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "total": {
+                  "description": "Matches found before the limit was applied, counted no further than 100000.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000
+                },
+                "truncated": {
+                  "description": "True when more matches were found than the limit returned.",
+                  "type": "boolean"
+                },
+                "hits": {
+                  "type": "array",
+                  "maxItems": 1000,
+                  "items": {
+                    "$ref": "#/$defs/hit"
+                  }
+                },
+                "ocr": {
+                  "$ref": "#/$defs/ocr"
+                },
+                "scope": {
+                  "description": "What this family's search reads and what it does not, in the source's own words.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "searched"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "type": "null"
+              },
+              "message": {
+                "type": "null"
+              },
+              "prefiltered": {
+                "const": false
+              },
+              "results": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "rejected"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "type": "null"
+              },
+              "message": {
+                "type": "null"
+              },
+              "prefiltered": {
+                "const": true
+              },
+              "results": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "skipped"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "prefiltered": {
+                "const": false
+              },
+              "results": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "snippet": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[^\\n\\r]*$"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "length": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "hit": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/paragraphHit"
+        },
+        {
+          "$ref": "#/$defs/cellHit"
+        },
+        {
+          "$ref": "#/$defs/shapeHit"
+        },
+        {
+          "$ref": "#/$defs/pageHit"
+        },
+        {
+          "$ref": "#/$defs/recognizedHit"
+        },
+        {
+          "$ref": "#/$defs/lineHit"
+        },
+        {
+          "$ref": "#/$defs/fieldHit"
+        }
+      ]
+    },
+    "ocr": {
+      "description": "Present exactly when this file's search read pixels: the engine, the pages it read, the density, its mean confidence and the sentence that says recognized text is approximate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "language",
+        "models",
+        "pages",
+        "pagesAvailable",
+        "dpi",
+        "truncated",
+        "stoppedBy",
+        "meanConfidence",
+        "approximate",
+        "notice"
+      ],
+      "properties": {
+        "engine": {
+          "type": "string",
+          "pattern": "^tesseract [0-9][0-9A-Za-z.+-]{0,31}$"
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$"
+        },
+        "models": {
+          "type": "string",
+          "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$"
+        },
+        "pages": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "pagesAvailable": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dpi": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 72,
+              "maximum": 400
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "stoppedBy": {
+          "oneOf": [
+            {
+              "enum": [
+                "page-bound",
+                "deadline"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "meanConfidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "approximate": {
+          "const": true
+        },
+        "notice": {
+          "const": "OCR text is approximate: it is what a recognizer read from pixels, not a text layer the file carries."
+        }
+      }
+    },
+    "recognizedHit": {
+      "description": "One line an offline recognizer read from pixels: page 1 for a picture, the page's own number for a scanned page, and the one-based line within what the engine read there. The offset is into that line. It is never editable and never an edit coordinate, because the file stores pixels and this coordinate addresses a reading of them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "page",
+        "line",
+        "offset",
+        "length",
+        "confidence",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "recognized"
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "length": {
+          "$ref": "#/$defs/length"
+        },
+        "confidence": {
+          "description": "The engine's mean confidence for the page this line came from, 0 to 100. A low value is a warning, not a refusal.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "const": false
+        }
+      }
+    },
+    "paragraphHit": {
+      "description": "A DOCX paragraph, addressed by its story and the same zero-based index a docx-paragraphs read of that story reports.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "story",
+        "index",
+        "table",
+        "offset",
+        "length",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "paragraph"
+        },
+        "story": {
+          "type": "string",
+          "pattern": "^(main|(header|footer):[1-9][0-9]{0,3})$"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "table": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "table",
+                "row",
+                "cell"
+              ],
+              "properties": {
+                "table": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "row": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cell": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "length": {
+          "$ref": "#/$defs/length"
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "cellHit": {
+      "description": "One stored worksheet cell. A formula cell matches on its formula text and its value as saved and is never editable here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "sheet",
+        "ref",
+        "row",
+        "column",
+        "type",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "cell"
+        },
+        "sheet": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "type": "string",
+          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "type": {
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "error",
+            "date",
+            "formula",
+            "empty"
+          ]
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "shapeHit": {
+      "description": "One PPTX slide paragraph. shapeId is null for speaker notes and for text this surface reports but does not edit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "slide",
+        "shapeId",
+        "index",
+        "notes",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "shape"
+        },
+        "slide": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "shapeId": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notes": {
+          "type": "boolean"
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pageHit": {
+      "description": "One PDF page's text layer. A page coordinate is for reading; this surface does not write PDF text.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "page",
+        "offset",
+        "length",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "page"
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "length": {
+          "$ref": "#/$defs/length"
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "const": false
+        }
+      }
+    },
+    "lineHit": {
+      "description": "One whole line of a plain text, code, data or Markdown file, by one-based number.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "line",
+        "offset",
+        "length",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "line"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "length": {
+          "$ref": "#/$defs/length"
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fieldHit": {
+      "description": "One field of a CSV or TSV file, by the one-based row and column `edit fields` addresses as RnCm. The offset counts characters of the field's value, quotes removed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "field",
+        "row",
+        "column",
+        "offset",
+        "length",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "field"
+        },
+        "field": {
+          "type": "string",
+          "pattern": "^R[1-9][0-9]{0,5}C[1-9][0-9]{0,3}$"
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "length": {
+          "$ref": "#/$defs/length"
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "const": true
+        }
+      }
+    }
+  }
+}

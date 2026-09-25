@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-create-receipt-v1.schema.json",
+  "title": "UFO create receipt v1",
+  "description": "One `ufo create` run: the Markdown, CSV, TSV or JSON source it read, the brand new Word document, PowerPoint deck or Excel workbook it wrote, and everything the source carried that the produced file cannot. This is the only verb whose output is not a copy of its input, so it carries its own contract rather than an edit receipt. The source is never modified, the output never replaces an existing file, and the produced bytes are read back through UFO's own structure readers and compared with the parsed source before anything is published.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "sequence",
+    "action",
+    "status",
+    "source",
+    "output",
+    "result",
+    "code",
+    "message",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.create-receipt" },
+    "schemaVersion": { "const": 1 },
+    "engineVersion": { "type": "string", "minLength": 1 },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "action": { "const": "create" },
+    "status": { "enum": ["completed", "refused", "failed"] },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "name",
+        "sizeBytes",
+        "lastModifiedMillis",
+        "sha256",
+        "stableDuringProcessing"
+      ],
+      "properties": {
+        "path": { "type": "string" },
+        "name": { "type": "string" },
+        "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+        "lastModifiedMillis": { "type": ["integer", "null"], "minimum": 0 },
+        "sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "stableDuringProcessing": { "type": ["boolean", "null"] }
+      }
+    },
+    "output": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sizeBytes", "sha256"],
+          "properties": {
+            "path": { "type": "string" },
+            "sizeBytes": { "type": "integer", "minimum": 0 },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["engine", "blocks", "skipped"],
+          "properties": {
+            "engine": { "enum": ["docx-create", "pptx-create", "xlsx-create"] },
+            "blocks": {
+              "description": "Blocks written: paragraphs and tables for a document, slides for a deck, rows for a workbook.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "skipped": {
+              "description": "What the source carried that the produced file cannot, such as an image reference.",
+              "type": "array",
+              "maxItems": 32,
+              "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+            }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "code": { "type": ["string", "null"] },
+    "message": { "type": ["string", "null"] },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxBlocks",
+        "maxRows",
+        "maxColumns",
+        "maxOutputBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": { "type": "integer", "minimum": 1 },
+        "maxBlocks": { "type": "integer", "minimum": 1 },
+        "maxRows": { "type": "integer", "minimum": 1 },
+        "maxColumns": { "type": "integer", "minimum": 1 },
+        "maxOutputBytes": { "type": "integer", "minimum": 1 },
+        "workerTimeoutMillis": { "type": "integer", "minimum": 1 },
+        "workerMaxHeapMiB": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "durationMillis": { "type": "integer", "minimum": 0 },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": { "const": "not_used" }
+  }
+}

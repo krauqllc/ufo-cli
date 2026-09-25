@@ -1,0 +1,360 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-intake-receipt-v1.schema.json",
+  "title": "UFO intake receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "sequence",
+    "action",
+    "status",
+    "source",
+    "detection",
+    "probe",
+    "warnings",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.intake-receipt"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "engineVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "action": {
+      "const": "intake"
+    },
+    "status": {
+      "enum": ["accepted", "limited", "refused", "failed"]
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "detection": {
+      "oneOf": [
+        { "$ref": "#/$defs/detection" },
+        { "type": "null" }
+      ]
+    },
+    "probe": {
+      "$ref": "#/$defs/probe"
+    },
+    "warnings": {
+      "$ref": "#/$defs/warnings"
+    },
+    "limits": {
+      "$ref": "#/$defs/limits"
+    },
+    "durationMillis": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": {
+      "const": "not_used"
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "name",
+        "sizeBytes",
+        "lastModifiedMillis",
+        "sha256",
+        "stableDuringProcessing"
+      ],
+      "properties": {
+        "path": { "type": "string" },
+        "name": { "type": "string" },
+        "sizeBytes": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "lastModifiedMillis": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "sha256": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "stableDuringProcessing": { "type": ["boolean", "null"] }
+      }
+    },
+    "detection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resolvedKind",
+        "resolvedFormat",
+        "claimedExtension",
+        "claimedFormat",
+        "contentExtension",
+        "contentFormat",
+        "nameAndBytes"
+      ],
+      "properties": {
+        "resolvedKind": {
+          "enum": [
+            "pdf",
+            "image",
+            "audio",
+            "video",
+            "archive",
+            "web",
+            "office",
+            "markdown",
+            "sqlite",
+            "font",
+            "certificate",
+            "calendar",
+            "contact",
+            "email",
+            "spreadsheet",
+            "text",
+            "binary"
+          ]
+        },
+        "resolvedFormat": { "type": ["string", "null"] },
+        "claimedExtension": { "type": ["string", "null"] },
+        "claimedFormat": { "type": ["string", "null"] },
+        "contentExtension": { "type": ["string", "null"] },
+        "contentFormat": { "type": ["string", "null"] },
+        "nameAndBytes": { "enum": ["match", "mismatch", "unknown"] }
+      }
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "level", "durationMillis", "code", "message"],
+      "properties": {
+        "outcome": {
+          "enum": [
+            "parsed",
+            "detected_only",
+            "refused",
+            "worker_crashed",
+            "worker_timed_out",
+            "probe_failed",
+            "source_changed",
+            "not_run"
+          ]
+        },
+        "level": {
+          "enum": ["worker_parsed", "in_process_parsed", "detected_only", "not_run"]
+        },
+        "durationMillis": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "code": { "type": ["string", "null"] },
+        "message": { "type": ["string", "null"] }
+      }
+    },
+    "warnings": {
+      "description": "Advisory signals read from the hashed bytes. They never change status; --fail-on selects which of them fail the batch.",
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 3,
+      "items": {
+        "enum": ["name_content_mismatch", "executable_content", "truncated_or_damaged"]
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxSourceBytes", "workerTimeoutMillis", "workerMaxHeapMiB"],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 268435456
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "accepted" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "properties": {
+              "sha256": { "type": "string" },
+              "stableDuringProcessing": { "const": true }
+            },
+            "required": ["sha256", "stableDuringProcessing"]
+          },
+          "detection": { "type": "object" },
+          "probe": {
+            "properties": {
+              "outcome": { "const": "parsed" },
+              "level": { "enum": ["worker_parsed", "in_process_parsed"] },
+              "code": { "type": "null" },
+              "message": { "type": "null" }
+            },
+            "required": ["outcome", "level", "code", "message"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "limited" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "properties": {
+              "sha256": { "type": "string" },
+              "stableDuringProcessing": { "const": true }
+            },
+            "required": ["sha256", "stableDuringProcessing"]
+          },
+          "detection": { "type": "object" },
+          "probe": {
+            "properties": {
+              "outcome": { "const": "detected_only" },
+              "level": { "const": "detected_only" },
+              "code": { "type": "string", "minLength": 1 },
+              "message": { "type": "string", "minLength": 1 }
+            },
+            "required": ["outcome", "level", "code", "message"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "refused" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "probe": {
+            "properties": {
+              "outcome": { "enum": ["refused", "not_run"] },
+              "code": { "type": "string", "minLength": 1 },
+              "message": { "type": "string", "minLength": 1 }
+            },
+            "required": ["outcome", "code", "message"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "failed" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "probe": {
+            "properties": {
+              "outcome": {
+                "enum": [
+                  "worker_crashed",
+                  "worker_timed_out",
+                  "probe_failed",
+                  "source_changed",
+                  "not_run"
+                ]
+              },
+              "code": { "type": "string", "minLength": 1 },
+              "message": { "type": "string", "minLength": 1 }
+            },
+            "required": ["outcome", "code", "message"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "probe": {
+            "properties": { "outcome": { "const": "not_run" } },
+            "required": ["outcome"]
+          }
+        },
+        "required": ["probe"]
+      },
+      "then": {
+        "properties": {
+          "detection": { "type": "null" },
+          "probe": {
+            "properties": { "level": { "const": "not_run" } },
+            "required": ["level"]
+          },
+          "warnings": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "probe": {
+            "properties": { "outcome": { "const": "source_changed" } },
+            "required": ["outcome"]
+          }
+        },
+        "required": ["probe"]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "properties": { "stableDuringProcessing": { "const": false } },
+            "required": ["stableDuringProcessing"]
+          },
+          "warnings": { "maxItems": 0 }
+        }
+      }
+    }
+  ]
+}

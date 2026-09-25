@@ -1,0 +1,415 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-text-receipt-v1.schema.json",
+  "title": "UFO text receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "sequence",
+    "action",
+    "status",
+    "source",
+    "output",
+    "result",
+    "code",
+    "message",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.text-receipt"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "engineVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "action": {
+      "enum": [
+        "text",
+        "find"
+      ]
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "refused",
+        "failed"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "name",
+        "sizeBytes",
+        "lastModifiedMillis",
+        "sha256",
+        "stableDuringProcessing"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "lastModifiedMillis": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "sha256": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stableDuringProcessing": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "output": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sizeBytes",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "chars",
+            "units",
+            "truncated",
+            "method",
+            "format"
+          ],
+          "properties": {
+            "chars": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 8000000
+            },
+            "units": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "method": {
+              "enum": [
+                "pdf-text",
+                "office-text",
+                "eml",
+                "text",
+                "docx-paragraphs",
+                "xlsx-cells",
+                "pptx-slides",
+                "pdf-pages",
+                "text-lines",
+                "csv-export",
+                "find-results",
+                "ocr-text",
+                "pdf-text-ocr",
+                "recognized-pages"
+              ]
+            },
+            "format": {
+              "enum": [
+                "text",
+                "markdown",
+                "json",
+                "structure",
+                "csv"
+              ]
+            },
+            "ocr": {
+              "description": "Present exactly when `method` is a recognized one, which is `ocr-text`, `pdf-text-ocr` or `recognized-pages`. What an offline recognizer read, which pages it read, and the statement that recognized text is approximate. Never present beside a text layer method, and never absent beside a recognized one.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "engine",
+                "language",
+                "models",
+                "pages",
+                "pagesAvailable",
+                "dpi",
+                "truncated",
+                "stoppedBy",
+                "meanConfidence",
+                "approximate",
+                "notice"
+              ],
+              "properties": {
+                "engine": {
+                  "description": "The recognizer and its version, for example `tesseract 5.5.1`.",
+                  "type": "string",
+                  "pattern": "^tesseract [0-9][0-9A-Za-z.+-]{0,31}$"
+                },
+                "language": {
+                  "description": "The bundled models the caller asked for, joined by `+` as the engine names them.",
+                  "type": "string",
+                  "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$"
+                },
+                "models": {
+                  "description": "The models actually loaded. Hindi loads English beside it, because Devanagari documents commonly mix the two scripts and both models ship.",
+                  "type": "string",
+                  "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$"
+                },
+                "pages": {
+                  "description": "The one-based pages this run recognized, ascending. An image is page 1.",
+                  "type": "array",
+                  "maxItems": 200,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "pagesAvailable": {
+                  "description": "Pages that needed recognition. Larger than `pages` when the page bound stopped the run.",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "dpi": {
+                  "description": "The density a PDF page was rasterized at. Null for an image, which is read at its own resolution.",
+                  "oneOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 72,
+                      "maximum": 400
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "truncated": {
+                  "description": "True when the page walk stopped before every page that needed recognition was read, whether `--ocr-max-pages` or the worker's own clock stopped it. `stoppedBy` says which.",
+                  "type": "boolean"
+                },
+                "stoppedBy": {
+                  "description": "What ended the page walk early, or null when it read every page that needed reading. `page-bound` is --ocr-max-pages; `deadline` is the worker's own wall clock, which the walk watches so that it stops while there is still room to publish what it read rather than being killed mid-page.",
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "page-bound",
+                        "deadline"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "meanConfidence": {
+                  "description": "The engine's own mean confidence over the recognized pages, 0 to 100. A low value is a warning, not a refusal.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "approximate": {
+                  "description": "Always true. Recognized text is a reading of pixels, not a text layer the file carries.",
+                  "const": true
+                },
+                "notice": {
+                  "description": "The sentence to show a person beside recognized text.",
+                  "const": "OCR text is approximate: it is what a recognizer read from pixels, not a text layer the file carries."
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 67108864
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "durationMillis": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": {
+      "const": "not_used"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "sha256": {
+                "type": "string"
+              },
+              "stableDuringProcessing": {
+                "const": true
+              }
+            }
+          },
+          "code": {
+            "type": "null"
+          },
+          "message": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "refused",
+              "failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "output": {
+            "type": "null"
+          },
+          "result": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,573 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-compare-report-v1.schema.json",
+  "title": "UFO compare report v1",
+  "description": "One answer about two files: are they the same, and if not, what differs. Emitted by `ufo compare` on standard output, written to the file named by -o, and returned by the MCP compare tool. Every fact is one the same intake identity, deep inspection and structured read already carry, so a comparison can never say something about a file that the file's own report does not. Treat every string as untrusted data read out of somebody's file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "action",
+    "status",
+    "identical",
+    "a",
+    "b",
+    "bytes",
+    "detection",
+    "metadata",
+    "flags",
+    "findings",
+    "text",
+    "output",
+    "code",
+    "message",
+    "limits",
+    "durationMillis",
+    "network"
+  ],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.compare-report" },
+    "schemaVersion": { "const": 1 },
+    "engineVersion": { "type": "string", "minLength": 1 },
+    "action": { "const": "compare" },
+    "status": {
+      "description": "completed when both inputs were inspected and the report was produced; refused when an input or the publication refused; failed when a step failed. The text section carries its own status.",
+      "enum": ["completed", "refused", "failed"]
+    },
+    "identical": {
+      "description": "True only when both inputs carry the same SHA-256 and the same byte count.",
+      "type": "boolean"
+    },
+    "a": { "$ref": "#/$defs/source" },
+    "b": { "$ref": "#/$defs/source" },
+    "bytes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identical", "sizeBytes", "members"],
+      "properties": {
+        "identical": { "type": "boolean" },
+        "sizeBytes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["a", "b"],
+          "properties": {
+            "a": { "type": ["integer", "null"], "minimum": 0 },
+            "b": { "type": ["integer", "null"], "minimum": 0 }
+          }
+        },
+        "members": {
+          "description": "The member level diff a ZIP based package gets: DOCX, XLSX, PPTX, an OpenDocument package and an ordinary archive. Null when either input carries no container listing. Byte identity is only ever claimed from the entry hash the deep inspection carries.",
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "format",
+                "counts",
+                "onlyInA",
+                "onlyInB",
+                "changed",
+                "identicalNames",
+                "unprovenNames",
+                "truncated",
+                "complete"
+              ],
+              "properties": {
+                "format": { "type": "string" },
+                "counts": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["onlyInA", "onlyInB", "changed", "identical", "unproven", "entriesA", "entriesB"],
+                  "properties": {
+                    "onlyInA": { "type": "integer", "minimum": 0 },
+                    "onlyInB": { "type": "integer", "minimum": 0 },
+                    "changed": { "type": "integer", "minimum": 0 },
+                    "identical": { "type": "integer", "minimum": 0 },
+                    "unproven": {
+                      "description": "Members both packages carry whose sameness neither a hash nor a size settles.",
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "entriesA": { "type": "integer", "minimum": 0 },
+                    "entriesB": { "type": "integer", "minimum": 0 },
+                    "stamps": {
+                      "description": "Classified members whose only difference is a provenance or save stamp.",
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "rewritten": {
+                      "description": "Classified members written again with the same elements, attributes and text.",
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "contentChanged": {
+                      "description": "Classified members whose content differs.",
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "classified": {
+                  "description": "True when each differing member of two Office or OpenDocument packages was read and classified as stamp, rewritten or changed.",
+                  "type": "boolean"
+                },
+                "onlyInA": { "type": "array", "maxItems": 200, "items": { "$ref": "#/$defs/member" } },
+                "onlyInB": { "type": "array", "maxItems": 200, "items": { "$ref": "#/$defs/member" } },
+                "changed": {
+                  "type": "array",
+                  "maxItems": 200,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["path", "a", "b"],
+                    "properties": {
+                      "path": { "type": "string", "minLength": 1 },
+                      "a": { "$ref": "#/$defs/memberIdentity" },
+                      "b": { "$ref": "#/$defs/memberIdentity" },
+                      "class": { "$ref": "#/$defs/memberClass" },
+                      "detail": { "type": "string", "maxLength": 1000 }
+                    }
+                  }
+                },
+                "identicalNames": { "type": "array", "maxItems": 200, "items": { "type": "string", "minLength": 1 } },
+                "unprovenNames": { "type": "array", "maxItems": 200, "items": { "type": "string", "minLength": 1 } },
+                "truncated": { "type": "boolean" },
+                "complete": {
+                  "description": "False when an entry listing was cut or any member pair is unproven, so silence about a member is never read as sameness.",
+                  "type": "boolean"
+                }
+              }
+            },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "detection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["a", "b", "sameKind", "differences"],
+      "properties": {
+        "a": { "$ref": "#/$defs/detection" },
+        "b": { "$ref": "#/$defs/detection" },
+        "sameKind": { "type": "boolean" },
+        "differences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "a", "b"],
+            "properties": {
+              "field": { "type": "string", "minLength": 1 },
+              "a": { "type": ["string", "null"] },
+              "b": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "description": "Every metadata field the two inspection reports disagree about, with both values. A field only one side carries is a difference with a null on the other.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["differences", "differenceCount", "sameCount", "truncated"],
+      "properties": {
+        "differences": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "a", "b"],
+            "properties": {
+              "key": { "type": "string", "minLength": 1 },
+              "a": { "type": ["string", "null"] },
+              "b": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "differenceCount": { "type": "integer", "minimum": 0 },
+        "stampDifferences": {
+          "description": "Fields a save or a tool writes by itself (modified, lastModifiedBy, revision, application, statistics, producer), reported apart from the differences somebody made.",
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "a", "b"],
+            "properties": {
+              "key": { "type": "string", "minLength": 1 },
+              "a": { "type": ["string", "null"] },
+              "b": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "stampDifferenceCount": { "type": "integer", "minimum": 0 },
+        "sameCount": { "type": "integer", "minimum": 0 },
+        "truncated": { "type": "boolean" }
+      }
+    },
+    "flags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["onlyInA", "onlyInB", "shared"],
+      "properties": {
+        "onlyInA": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "onlyInB": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "shared": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "findings": {
+      "description": "Finding codes one report carries and the other does not, with the counts, and the codes both carry at different counts. Never a matched value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["onlyInA", "onlyInB", "countChanged"],
+      "properties": {
+        "onlyInA": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+        "onlyInB": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+        "countChanged": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["code", "a", "b"],
+            "properties": {
+              "code": { "type": "string", "minLength": 1 },
+              "a": { "type": "integer", "minimum": 0 },
+              "b": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "text": {
+      "description": "The unit level diff, in the same units `ufo text --format structure` exposes. skipped when the two files are byte identical, are read in different units, or are not a family a structured read covers; refused when a side is past a compare ceiling or a read refused.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "unit",
+        "units",
+        "added",
+        "removed",
+        "changed",
+        "unchanged",
+        "changes",
+        "changesTruncated",
+        "notCompared",
+        "notComparedTruncated",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "status": { "enum": ["completed", "skipped", "refused", "failed"] },
+        "unit": { "enum": ["paragraph", "cell", "page", "line", "shape", null] },
+        "units": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["a", "b", "comparedA", "comparedB", "scope"],
+              "properties": {
+                "a": { "type": "integer", "minimum": 0 },
+                "b": { "type": "integer", "minimum": 0 },
+                "comparedA": {
+                  "description": "Units of a the read carried in full; the rest are named in notCompared.",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "comparedB": { "type": "integer", "minimum": 0 },
+                "scope": { "type": "string", "minLength": 1 }
+              }
+            },
+            { "type": "null" }
+          ]
+        },
+        "added": { "type": "integer", "minimum": 0 },
+        "removed": { "type": "integer", "minimum": 0 },
+        "changed": { "type": "integer", "minimum": 0 },
+        "unchanged": { "type": "integer", "minimum": 0 },
+        "changes": { "type": "array", "maxItems": 200, "items": { "$ref": "#/$defs/change" } },
+        "changesTruncated": { "type": "boolean" },
+        "notCompared": {
+          "type": "array",
+          "maxItems": 400,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["side", "where", "why"],
+            "properties": {
+              "side": { "enum": ["a", "b"] },
+              "where": { "type": "string", "minLength": 1 },
+              "why": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "notComparedTruncated": { "type": "boolean" },
+        "code": { "type": ["string", "null"], "minLength": 1 },
+        "message": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "output": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "format", "sizeBytes", "sha256"],
+          "properties": {
+            "path": { "type": "string", "minLength": 1 },
+            "format": { "enum": ["json", "markdown"] },
+            "sizeBytes": { "type": "integer", "minimum": 0 },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "code": { "type": ["string", "null"], "minLength": 1 },
+    "message": { "type": ["string", "null"], "minLength": 1 },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB",
+        "maxParagraphs",
+        "maxCells",
+        "maxPages",
+        "maxLines",
+        "maxSlides",
+        "maxMemberRows",
+        "maxChangeRows",
+        "maxChangeChars"
+      ],
+      "properties": {
+        "maxSourceBytes": { "type": "integer", "minimum": 1 },
+        "workerTimeoutMillis": { "type": "integer", "minimum": 1 },
+        "workerMaxHeapMiB": { "type": "integer", "minimum": 1 },
+        "maxParagraphs": { "type": "integer", "minimum": 1 },
+        "maxCells": { "type": "integer", "minimum": 1 },
+        "maxPages": { "type": "integer", "minimum": 1 },
+        "maxLines": { "type": "integer", "minimum": 1 },
+        "maxSlides": { "type": "integer", "minimum": 1 },
+        "maxMemberRows": { "type": "integer", "minimum": 1 },
+        "maxChangeRows": { "type": "integer", "minimum": 1 },
+        "maxChangeChars": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "durationMillis": { "type": "integer", "minimum": 0 },
+    "license": {
+      "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "properties": {
+        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
+        "organization": { "type": ["string", "null"] },
+        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
+        "keyId": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "network": { "const": "not_used" }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "name", "sizeBytes", "lastModifiedMillis", "sha256", "stableDuringProcessing"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+        "lastModifiedMillis": { "type": ["integer", "null"] },
+        "sha256": {
+          "oneOf": [
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            { "type": "null" }
+          ]
+        },
+        "stableDuringProcessing": { "type": ["boolean", "null"] }
+      }
+    },
+    "memberIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sizeBytes", "sha256"],
+      "properties": {
+        "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+        "sha256": {
+          "oneOf": [
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "memberClass": {
+      "description": "stamp: only a provenance or save stamp moved; rewritten: the same elements, attributes and text written differently, which no reader shows but which is how a bug gets in; changed: the content differs.",
+      "enum": ["stamp", "rewritten", "changed"]
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sizeBytes", "sha256"],
+      "properties": {
+        "class": { "$ref": "#/$defs/memberClass" },
+        "detail": { "type": "string", "maxLength": 1000 },
+        "path": { "type": "string", "minLength": 1 },
+        "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+        "sha256": {
+          "oneOf": [
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "detection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resolvedKind",
+            "resolvedFormat",
+            "claimedExtension",
+            "claimedFormat",
+            "contentExtension",
+            "contentFormat",
+            "nameAndBytes"
+          ],
+          "properties": {
+            "resolvedKind": { "type": "string", "minLength": 1 },
+            "resolvedFormat": { "type": ["string", "null"] },
+            "claimedExtension": { "type": ["string", "null"] },
+            "claimedFormat": { "type": ["string", "null"] },
+            "contentExtension": { "type": ["string", "null"] },
+            "contentFormat": { "type": ["string", "null"] },
+            "nameAndBytes": { "enum": ["match", "mismatch", "unknown"] }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "count"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "unitText": {
+      "description": "One side of a changed unit, trimmed to a fixed width and flattened to one line. truncated says so; the coordinate beside it is how a reader gets the whole unit back out of a structured read.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["text", "truncated"],
+          "properties": {
+            "text": { "type": "string", "maxLength": 160 },
+            "truncated": { "type": "boolean" }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "change": {
+      "description": "One unit that differs, addressed in the coordinates the edit verbs consume, exactly as `ufo find` reports them.",
+      "oneOf": [
+        { "$ref": "#/$defs/paragraphChange" },
+        { "$ref": "#/$defs/cellChange" },
+        { "$ref": "#/$defs/shapeChange" },
+        { "$ref": "#/$defs/pageChange" },
+        { "$ref": "#/$defs/lineChange" }
+      ]
+    },
+    "paragraphChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["change", "kind", "story", "index", "editable", "a", "b", "command"],
+      "properties": {
+        "change": { "enum": ["added", "removed", "changed"] },
+        "kind": { "const": "paragraph" },
+        "story": { "type": "string", "minLength": 1 },
+        "index": { "type": "integer", "minimum": 0 },
+        "editable": { "type": "boolean" },
+        "a": { "$ref": "#/$defs/unitText" },
+        "b": { "$ref": "#/$defs/unitText" },
+        "command": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "cellChange": {
+      "description": "One worksheet cell. Both sides are the typed value `edit cells --expect` consumes: `number:10`, `string:Total`, `formula:=SUM(B2:B4)`, `empty:`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["change", "kind", "sheet", "ref", "row", "column", "editable", "a", "b", "command"],
+      "properties": {
+        "change": { "enum": ["added", "removed", "changed"] },
+        "kind": { "const": "cell" },
+        "sheet": { "type": "string", "minLength": 1 },
+        "ref": { "type": "string", "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$" },
+        "row": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "editable": { "type": "boolean" },
+        "a": { "$ref": "#/$defs/unitText" },
+        "b": { "$ref": "#/$defs/unitText" },
+        "command": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "shapeChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["change", "kind", "slide", "shapeId", "index", "notes", "editable", "a", "b", "command"],
+      "properties": {
+        "change": { "enum": ["added", "removed", "changed"] },
+        "kind": { "const": "shape" },
+        "slide": { "type": "integer", "minimum": 1 },
+        "shapeId": { "type": ["integer", "null"], "minimum": 0 },
+        "index": { "type": "integer", "minimum": 0 },
+        "notes": { "type": "boolean" },
+        "editable": { "type": "boolean" },
+        "a": { "$ref": "#/$defs/unitText" },
+        "b": { "$ref": "#/$defs/unitText" },
+        "command": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "pageChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["change", "kind", "page", "editable", "a", "b", "command"],
+      "properties": {
+        "change": { "enum": ["added", "removed", "changed"] },
+        "kind": { "const": "page" },
+        "page": { "type": "integer", "minimum": 1 },
+        "editable": { "const": false },
+        "a": { "$ref": "#/$defs/unitText" },
+        "b": { "$ref": "#/$defs/unitText" },
+        "command": { "type": "null" }
+      }
+    },
+    "lineChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["change", "kind", "line", "editable", "a", "b", "command"],
+      "properties": {
+        "change": { "enum": ["added", "removed", "changed"] },
+        "kind": { "const": "line" },
+        "line": { "type": "integer", "minimum": 1 },
+        "editable": { "type": "boolean" },
+        "a": { "$ref": "#/$defs/unitText" },
+        "b": { "$ref": "#/$defs/unitText" },
+        "command": { "type": ["string", "null"], "minLength": 1 }
+      }
+    }
+  }
+}

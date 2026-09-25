@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-compatibility-audit-summary-v1.schema.json",
+  "title": "UFO compatibility audit summary v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "engineVersion",
+    "auditOutcome",
+    "fileCount",
+    "totalBytes",
+    "statusCounts",
+    "resolvedKindCounts",
+    "resolvedFormatCounts",
+    "nameAndBytesCounts",
+    "codeCounts",
+    "warningCounts",
+    "limits",
+    "artifact",
+    "inputManifestSha256",
+    "stableResultsSha256",
+    "receiptsSha256",
+    "privacy"
+  ],
+  "properties": {
+    "schema": { "const": "com.krauq.ufo.compatibility-audit-summary" },
+    "schemaVersion": { "const": 1 },
+    "engineVersion": { "type": "string", "minLength": 1 },
+    "auditOutcome": { "enum": ["all_accepted", "review_required"] },
+    "fileCount": { "type": "integer", "minimum": 1, "maximum": 20000 },
+    "totalBytes": { "type": "integer", "minimum": 0 },
+    "statusCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted", "limited", "refused", "failed"],
+      "properties": {
+        "accepted": { "type": "integer", "minimum": 0 },
+        "limited": { "type": "integer", "minimum": 0 },
+        "refused": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "resolvedKindCounts": { "$ref": "#/$defs/counts" },
+    "resolvedFormatCounts": { "$ref": "#/$defs/counts" },
+    "nameAndBytesCounts": { "$ref": "#/$defs/counts" },
+    "codeCounts": { "$ref": "#/$defs/counts" },
+    "warningCounts": { "$ref": "#/$defs/counts" },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB",
+        "commandTimeoutSeconds"
+      ],
+      "properties": {
+        "maxSourceBytes": { "const": 268435456 },
+        "workerTimeoutMillis": { "type": "integer", "minimum": 1, "maximum": 300000 },
+        "workerMaxHeapMiB": { "type": "integer", "minimum": 32, "maximum": 2048 },
+        "commandTimeoutSeconds": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "artifact": {
+      "oneOf": [
+        { "$ref": "#/$defs/launcherArtifact" },
+        { "$ref": "#/$defs/containerArtifact" }
+      ]
+    },
+    "inputManifestSha256": { "$ref": "#/$defs/sha256" },
+    "stableResultsSha256": { "$ref": "#/$defs/sha256" },
+    "receiptsSha256": { "$ref": "#/$defs/sha256" },
+    "privacy": {
+      "const": "Reports contain file names and parser outcomes; raw receipts also contain processed paths."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "auditOutcome": { "const": "all_accepted" } },
+        "required": ["auditOutcome"]
+      },
+      "then": {
+        "properties": {
+          "statusCounts": {
+            "properties": {
+              "accepted": { "minimum": 1 },
+              "limited": { "const": 0 },
+              "refused": { "const": 0 },
+              "failed": { "const": 0 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "auditOutcome": { "const": "review_required" } },
+        "required": ["auditOutcome"]
+      },
+      "then": {
+        "properties": {
+          "statusCounts": {
+            "anyOf": [
+              { "properties": { "limited": { "minimum": 1 } } },
+              { "properties": { "refused": { "minimum": 1 } } },
+              { "properties": { "failed": { "minimum": 1 } } }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "counts": {
+      "type": "object",
+      "propertyNames": { "minLength": 1 },
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "launcherArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface", "launcher"],
+      "properties": {
+        "surface": { "const": "launcher" },
+        "launcher": { "type": "string", "minLength": 1 }
+      }
+    },
+    "containerArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface", "image", "imageId"],
+      "properties": {
+        "surface": { "const": "container" },
+        "image": { "type": "string", "minLength": 1 },
+        "imageId": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}
