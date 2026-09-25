@@ -1,27 +1,31 @@
 # UFO CLI
 
-UFO CLI reads and edits Word, Excel, PowerPoint, PDF, image, archive and text
-files on your own machine, for AI agents and scripts. An edit changes only what
-it is asked to, writes a new copy and returns a JSON receipt of what it did. It
-makes no network connection.
+UFO CLI lets an AI agent or a script read 274 file types and edit Word, Excel,
+PowerPoint and PDF files on your own machine. An edit changes only what it is
+asked to, writes a new copy and returns a JSON receipt of what it did. It makes
+no network connection.
 
-- Download: [Releases](https://github.com/krauqllc/ufo-cli/releases), for Linux
-  x86_64: a Debian package, an app image and a container image.
-- Documentation, comparison and pricing: https://universalfileopener.com/cli/
+Website and comparison with other agent tools: https://universalfileopener.com/cli/
 
 ## Install
 
+Linux x86_64:
+
 ```sh
-sha256sum -c SHA256SUMS
-sudo apt install ./universal-file-opener_1.5.0_amd64.deb
+curl -fsSL https://universalfileopener.com/install.sh | sh
 ufo doctor
 ufo skill install --agent claude-code
 ```
 
-For an MCP client, `ufo mcp print-config --client claude-code` prints the
-server registration. For the container, `docker load -i ufo-cli-1.5.0-docker.tar`,
-then run `ufo-cli:1.5.0` with networking disabled and your inputs mounted
-read-only.
+[`install.sh`](https://github.com/krauqllc/ufo-cli/blob/main/install.sh) downloads the app image from the latest
+[release](https://github.com/krauqllc/ufo-cli/releases), checks it against the
+release's `SHA256SUMS` and installs it under `~/.local`, without sudo. The same
+release has a Debian package (`sudo apt install ./universal-file-opener_1.5.0_amd64.deb`)
+and a container image (`docker load -i ufo-cli-1.5.0-docker.tar`; run it with
+networking disabled and your inputs mounted read-only).
+
+For an MCP client instead of the skill, `ufo mcp print-config --client claude-code`
+prints the server registration.
 
 ## What is in this repository
 
@@ -43,7 +47,7 @@ The other files under `tools/` are the helpers these import. They need Python
 ## Check it yourself
 
 ```sh
-UFO=/opt/universal-file-opener/bin/ufo
+UFO=$(command -v ufo)
 python3 tools/cli/evaluate_sample.py --ufo $UFO --expect-version 1.5.0 --output sample-result
 python3 tools/cli/own_file_evaluation.py --files ~/my-files --ufo $UFO --expect-version 1.5.0 --output my-files-report
 python3 tools/corpus/download_realworld_corpus.py --download --output corpus
@@ -59,8 +63,8 @@ Both need the network once; the runs themselves do not.
 The files here are Apache 2.0 (`LICENSE`, `NOTICE`). The binaries are licensed
 under `ENGINE-LICENSE.txt`: free for individuals, evaluation, education,
 non-commercial use, and organizations with fewer than ten people and under USD 1
-million in annual revenue. Other organizations need a paid license; see
-https://universalfileopener.com/cli/#pricing.
+million in annual revenue. Larger organizations need a
+[license](https://universalfileopener.com/cli/pricing/).
 
 ## Security
 
