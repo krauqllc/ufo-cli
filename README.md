@@ -68,6 +68,10 @@ report with a tracked change and a PowerPoint slide. It creates fictional
 files, needs only Python 3 and UFO, and checks original hashes, dry-run hashes
 and every untouched package part. It needs no agent, model API or account.
 
+The same page has a **36-second walkthrough using actual Microsoft Office
+renders**, plus a transcript and the original and updated files. It shows the
+saved Excel total, Word revision markup and updated PowerPoint slide.
+
 ## Working efficiently
 
 Read the help for the operation you need: `ufo edit paragraphs --help`. Locate
@@ -75,6 +79,10 @@ text with `ufo find --text 'budget' --compact report.docx`, then read selected
 paragraphs, cells or slides with `ufo text --format structure --compact`.
 Batch independent changes to one file, and reuse the output receipt's hash for
 the next edit. Store full receipts when you need an audit record.
+
+`--compact` applies to `text`, `find`, `inspect --deep` and `edit`; `intake`,
+`convert` and `unpack` do not accept it. For MCP, read `tools/list` schemas:
+`find` takes one file and `report` requires an output path.
 
 Only operations that declare `--expect-sha256` accept revision guards.
 `replace-text`, PDF page edits, image transforms and archive edits do not.
