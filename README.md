@@ -25,8 +25,8 @@ ufo skill install --agent claude-code --dir "$PWD"
 [`install.sh`](https://github.com/krauqllc/ufo-cli/blob/main/install.sh) downloads the app image from the latest
 [release](https://github.com/krauqllc/ufo-cli/releases), checks it against the
 release's `SHA256SUMS` and installs it under `~/.local`, without sudo. The same
-release has a Debian package (`sudo apt install ./universal-file-opener_1.5.0_amd64.deb`)
-and `ufo-cli-1.5.0-docker.tar`, an archive of the container image for offline transfer.
+release has a Debian package (`sudo apt install ./universal-file-opener_1.5.1_amd64.deb`)
+and `ufo-cli-1.5.1-docker.tar`, an archive of the container image for offline transfer.
 
 ### Container
 
@@ -38,14 +38,14 @@ docker run --rm --network none --read-only --cap-drop ALL \
   --pids-limit 128 --cpus 2 --memory 1g \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
   --mount type=bind,src="$PWD",dst=/input,readonly \
-  ghcr.io/krauqllc/ufo-cli:1.5.0 text /input/report.docx
+  ghcr.io/krauqllc/ufo-cli:1.5.1 text /input/report.docx
 ```
 
 No GitHub login is needed. The temporary mount is required. For edits, mount a
 separate writable output folder at `/output` and select a new file there. The
 container reads, edits and recognizes text; page rendering and Office-to-PDF
-conversion need the application package. For a pinned deployment, the 1.5.0
-image digest is `sha256:6642403388fda95c597706c8cf57fe63d37a0931fd67126d62d86982e7a50a24`.
+conversion need the application package. For a deployment pinned to an immutable
+image, use the digest in the [release notes](https://github.com/krauqllc/ufo-cli/releases/tag/v1.5.1).
 
 ### Connect an agent
 
@@ -110,8 +110,8 @@ The other files under `tools/` are the helpers these import. They need Python
 
 ```sh
 UFO=$(command -v ufo)
-python3 tools/cli/evaluate_sample.py --ufo "$UFO" --expect-version 1.5.0 --output sample-result
-python3 tools/cli/own_file_evaluation.py --files ~/my-files --ufo "$UFO" --expect-version 1.5.0 --output my-files-report
+python3 tools/cli/evaluate_sample.py --ufo "$UFO" --expect-version 1.5.1 --output sample-result
+python3 tools/cli/own_file_evaluation.py --files ~/my-files --ufo "$UFO" --expect-version 1.5.1 --output my-files-report
 python3 tools/corpus/download_realworld_corpus.py --download --output corpus
 python3 tools/corpus/compare_agent_tools.py --download --corpus tools/corpus/realworld_corpus_manifest.tsv --corpus-root corpus --ufo "$UFO"
 ```
