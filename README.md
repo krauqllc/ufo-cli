@@ -1,9 +1,9 @@
 # UFO CLI
 
-Let your agent update the files your clients already use. UFO reads and edits
-Word reports, Excel workbooks, PowerPoint decks, PDFs and supporting files on
-your machine. It keeps originals, writes new copies and returns JSON receipts.
-It makes no network connection.
+Give your agent the whole document workflow. Read the brief, update the model,
+revise the memo and slides. UFO brings Word, Excel, PowerPoint, PDF and supporting
+files into one local CLI and MCP server. It keeps originals, writes new copies
+and returns JSON receipts. It makes no network connection.
 
 **Free for individuals and small teams.** Every command and supported file type
 is included, with no signup or watermark. Organizations with fewer than ten
@@ -60,17 +60,22 @@ prints a template. Replace its executable and folder placeholders, then merge
 it into the client configuration. Printing does not register a server. Follow
 the [complete setup instructions](https://universalfileopener.com/cli/#agents).
 
-## Try a client update
+## The numbers changed. Update the board pack.
 
-Run the [working example](https://universalfileopener.com/cli/#example): changing
-design hours from 40 to 48 recalculates a workbook's fee, then updates a Word
-report with a tracked change and a PowerPoint slide. It creates fictional
-files, needs only Python 3 and UFO, and checks original hashes, dry-run hashes
-and every untouched package part. It needs no agent, model API or account.
+[Watch the 64-second film](https://universalfileopener.com/cli/#film), then
+[inspect and replay the workflow](https://universalfileopener.com/cli/#example).
+A fictional change brief raises Q4 demand and supplier costs. UFO updates a
+three-sheet financial model, a three-page Word memo with native tracked
+revisions, and two slides in a six-slide board deck. Revenue rises to $1.512
+million while gross margin falls to 35%. The revised files make that tradeoff
+clear.
 
-The same page has a **36-second walkthrough using actual Microsoft Office
-renders**, plus a transcript and the original and updated files. It shows the
-saved Excel total, Word revision markup and updated PowerPoint slide.
+The film uses actual Microsoft Office exports of the downloadable files. The
+replay needs only Python 3 and UFO, with no agent or model API. It checks all
+20 recomputed saved results, existing formulas, earlier periods, native Word
+revisions, original hashes and untouched package parts. Every edit matches its
+dry-run output hash; an intentionally stale source hash refuses. This is an
+edited script demonstration, not an agent recording or a timing benchmark.
 
 ## Working efficiently
 
