@@ -1,0 +1,60 @@
+{
+  "name": "@krauq/ufo-cli",
+  "version": "1.5.1",
+  "private": false,
+  "description": "Pinned local file inspection, extraction and guarded edits for CLI and MCP. Linux x86_64.",
+  "mcpName": "io.github.krauqllc/ufo-cli",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "keywords": [
+    "docx",
+    "xlsx",
+    "pptx",
+    "pdf",
+    "mcp",
+    "agent",
+    "document-editing",
+    "cli"
+  ],
+  "license": "SEE LICENSE IN ENGINE-LICENSE.txt",
+  "homepage": "https://universalfileopener.com/cli/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krauqllc/ufo-cli.git"
+  },
+  "bugs": {
+    "url": "mailto:support@krauq.com"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "libc": [
+    "glibc"
+  ],
+  "bin": {
+    "ufo": "bin/ufo.js"
+  },
+  "files": [
+    "bin/ufo.js",
+    "lib/runtime.js",
+    "scripts/postinstall.js",
+    "release-pins.json",
+    "README.md",
+    "ENGINE-LICENSE.txt",
+    "NOTICE",
+    "LICENSE"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "verify": "node scripts/postinstall.js --verify-only"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,90 @@
+Universal File Opener (UFO)
+Copyright 2026 Krauq LLC.
+
+This product includes software developed by Krauq LLC.
+
+What this NOTICE covers
+-----------------------
+
+This NOTICE is the Apache License 2.0 section 4(d) notice for the parts of
+this repository that LICENSE places under the Apache License, Version 2.0:
+
+  cli/                 the CLI command layer, the local stdio MCP server and
+                       the agent skill generator
+  docs/cli/schemas/    the receipt, report and capability JSON schemas
+  tools/cli/           build, packaging, installation and evaluation tools
+  tools/corpus/        corpus and comparison evaluation tools
+  tools/audit/         the customer held compatibility audit tools
+  packaging/linux-cli/ Linux CLI packaging, container recipe, registry
+                       metadata and evidence tooling
+  packaging/npm/       the npm wrapper package
+  packaging/homebrew/  the Homebrew formula
+
+What this NOTICE does not cover
+-------------------------------
+
+office-core, viewer-core, office-compose, office-compose-android,
+desktop-app, app, ios-app and baselineprofile are NOT under the Apache
+License. No open source grant of any kind applies to them. Neither does the
+Apache License apply to any distributed UFO binary: the Linux app image, the
+Debian package and the restricted OCI container image embed office-core and
+viewer-core and are distributed under the separate business use license in
+packaging/linux-cli/ENGINE-LICENSE.txt.
+
+A redistribution of the Apache licensed sources must keep this NOTICE and must
+not describe the engines, the applications or any UFO binary as Apache
+licensed.
+
+Third party components
+----------------------
+
+UFO binaries include third party software under its own licenses. The
+human readable notice shipped beside the application is
+desktop-app/src/main/resources/packaging/THIRD-PARTY-NOTICES.txt. Component
+inventories, license review rows, source locks and the special restriction
+decisions are under packaging/linux-cli/, including
+app-special-license-review.tsv, debian-license-review.tsv,
+jar-legal-evidence-review.tsv, debian-source.lock.tsv,
+temurin-source.lock.tsv and vendored-asset-source.lock.tsv.
+
+Vendored asset notices live with the assets: viewer-core/src/main/resources/
+NOTICE.md records the modified Roboto derivatives and their exact byte
+identities. The Android notice resource is app/src/main/res/raw/
+third_party_notices.txt.
+
+Named obligations that survive redistribution, from the review rows above:
+
+  UnRAR (com.github.junrar)      extraction only; the UnRAR restriction notice
+                                 must ship, and no RAR compatible archiver may
+                                 be developed from it
+  SQLite JDBC (org.xerial)       the exact Apache and Zentus notices are
+                                 preserved byte for byte
+  OpenJDK runtime                GPLv2 with the Classpath and assembly
+                                 exceptions; the packaged runtime keeps its
+                                 own legal directory and corresponding source
+                                 availability
+  glibc                          dynamically linked LGPL boundary with
+                                 relinkable shared libraries and corresponding
+                                 source availability
+  Roboto and the Adobe Glyph     modified derivatives, documented with their
+  List                           provenance and exact hashes
+
+Trademarks
+----------
+
+UFO, Universal File Opener and Krauq are marks of Krauq LLC. The Apache
+License does not grant trademark rights. Microsoft Office, Word, Excel,
+PowerPoint, Adobe, PDF and every other third party mark named in this
+repository belong to their respective owners and are used only to identify
+file formats and applications.
+
+Scope
+-----
+
+The Apache License covers the source paths listed above and nothing else. A
+binary distributed by Krauq LLC combines those Apache licensed sources with
+the proprietary engines, so the binary as a whole is licensed under the
+business use license in packaging/linux-cli/ENGINE-LICENSE.txt, and it ships
+the Apache License text and this NOTICE as the Apache License requires. The
+obligations named above stand as written for a source publication of the
+listed paths, which ships no third party binary.
