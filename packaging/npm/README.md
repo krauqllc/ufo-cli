@@ -10,16 +10,24 @@ This package installs the exact UFO 1.5.1 runtime. Direct
 are also available. Install and check your first file:
 
 ```sh
-npm install --global @krauq/ufo-cli@1.5.1
+npm install --global @krauq/ufo-cli@1.5.1 --allow-scripts=@krauq/ufo-cli
 ufo --version
 ufo doctor
 ufo inspect --json ./your-file
 ```
 
+On npm 12, the explicit script approval lets UFO's installer run. With npm 11
+or earlier, use `npm install --global @krauq/ufo-cli@1.5.1` with install scripts
+enabled; omit `--allow-scripts`.
+
 Linux x86_64, glibc 2.35+, Node.js 18.17+ and GNU tar are required. Ubuntu
 24.04 and Debian 12 are tested. Native macOS, Windows, ARM64 and Alpine/musl
 are unsupported. Java is included. `ufo doctor` also checks optional rendering
 dependencies on your host.
+
+Your npm version may require a newer Node.js release than the wrapper does.
+For example, npm 12.2.0 requires Node.js 22.22.2 or later in 22.x, 24.15.0 or
+later in 24.x, or 26+. Use a Node.js version supported by your npm release.
 
 Installation downloads the pinned 202 MB release archive over HTTPS and checks
 its hash and complete runtime identity. npm install scripts must be enabled.
@@ -65,9 +73,22 @@ with `ufo license install ./license.json`, then check `ufo license status`.
 License checks are offline.
 
 The wrapper is pinned to its exact runtime version and never upgrades it
-silently. Update by installing a reviewed newer wrapper tarball. `npm install --global @krauq/ufo-cli@VERSION` selects an exact
-published version. Rebuilding an intact installation verifies and reuses
-it. To check all files in a downloaded runtime, run:
+silently. Update by selecting a reviewed exact published version. On npm 12:
+
+```sh
+npm install --global @krauq/ufo-cli@VERSION --allow-scripts=@krauq/ufo-cli
+```
+
+With npm 11 or earlier, omit `--allow-scripts` and keep install scripts enabled.
+If installation was blocked by script policy, approve and rerun the installed
+package's setup. This also verifies and reuses an intact runtime:
+
+```sh
+npm rebuild --global @krauq/ufo-cli --allow-scripts=@krauq/ufo-cli
+```
+
+The same npm-version rule applies to rebuilding. To check all files in a
+downloaded runtime, run:
 
 ```sh
 npm run verify --prefix "$(npm root --global)/@krauq/ufo-cli"
