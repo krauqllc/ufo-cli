@@ -148,8 +148,12 @@ MCPB bundle for compatible Linux clients, listed in the
 [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.krauqllc%2Fufo-cli/versions/1.5.2-1).
 Directory revision `1.5.2-1` provides the matching `1.5.2` engine and bundle.
 Choose only existing task folders when installing the bundle; no directories
-are granted by default. npm publication awaits the publisher's 2FA; Smithery
-and Glama account submission are separate pending steps.
+are granted by default. The npm package is public as
+[`@krauq/ufo-cli`](https://www.npmjs.com/package/@krauq/ufo-cli). On npm 12 use
+`npm install --global @krauq/ufo-cli@1.5.2 --allow-scripts=@krauq/ufo-cli`;
+on npm 11 or earlier, omit `--allow-scripts` and keep installation scripts enabled.
+The wrapper verifies and installs this exact Linux runtime. Smithery and Glama
+account submissions are separate pending steps.
 
 ## Check it yourself
 
