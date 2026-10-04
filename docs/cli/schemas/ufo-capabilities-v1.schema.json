@@ -29,6 +29,98 @@
       "additionalProperties": false,
       "required": ["workerTimeoutMillis", "workerMaxHeapMiB", "textRecognition", "maxSourceBytes"],
       "properties": {
+        "jsonFieldEdits": {
+          "description": "Whole-document strict JSON field edit bounds; duplicate decoded object keys refuse before parsing to maps.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["maxSourceBytes", "maxDepth", "maxTokens", "maxEdits", "maxValueChars"],
+          "properties": {
+            "maxSourceBytes": { "type": "integer", "minimum": 1 },
+            "maxDepth": { "type": "integer", "minimum": 1 },
+            "maxTokens": { "type": "integer", "minimum": 1 },
+            "maxEdits": { "type": "integer", "minimum": 1 },
+            "maxRequestBytes": { "type": "integer", "minimum": 1 },
+            "maxValueChars": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "jsonFieldReads": {
+          "type": "object", "additionalProperties": false,
+          "required": ["schema", "schemaVersion", "selector", "maxSourceBytes", "maxDepth", "maxTokens", "maxPointerChars", "maxValueChars", "maxPageSize"],
+          "properties": {
+            "schema": {"const": "com.krauq.ufo.json-fields"},
+            "schemaVersion": {"const": 1},
+            "selector": {"const": "pointer"},
+            "maxSourceBytes": {"type": "integer", "minimum": 1},
+            "maxDepth": {"type": "integer", "minimum": 1},
+            "maxTokens": {"type": "integer", "minimum": 1},
+            "maxPointerChars": {"type": "integer", "minimum": 1},
+            "maxValueChars": {"type": "integer", "minimum": 1},
+            "maxPageSize": {"type": "integer", "minimum": 1, "maximum": 200}
+          }
+        },
+        "delimitedFieldReads": {
+          "type": "object", "additionalProperties": false,
+          "required": ["schema", "schemaVersion", "selector", "maxSourceBytes", "maxRows", "maxColumns", "maxCells", "maxValueChars", "maxTextChars"],
+          "properties": {
+            "schema": {"const": "com.krauq.ufo.delimited-fields"}, "schemaVersion": {"const": 1},
+            "selector": {"const": "range"}, "maxSourceBytes": {"type": "integer", "minimum": 1},
+            "maxRows": {"type": "integer", "minimum": 1}, "maxColumns": {"type": "integer", "minimum": 1},
+            "maxCells": {"type": "integer", "minimum": 1, "maximum": 2000},
+            "maxValueChars": {"type": "integer", "minimum": 1}, "maxTextChars": {"type": "integer", "minimum": 1},
+            "bareQuotes": {"description": "The CSV quote modes, the default first: refuse reads strict RFC 4180 quoting and refuses a file holding a quote inside a field that does not start with one, naming the first; literal reads such a quote as an ordinary character, as the UFO apps do. text --format structure --range, find, edit fields and create take --bare-quotes (MCP bareQuotes). TSV quotes are always literal. Optional: a build older than the option reports none and reads strictly.", "const": ["refuse", "literal"]}
+          }
+        },
+        "pdfPageWindows": {
+          "description": "Explicit offset/limit on one PDF pages selection reads a text-layer window without paragraph edit models or OCR.",
+          "type": "object", "additionalProperties": false,
+          "required": ["schema", "schemaVersion", "selector", "maxSourceBytes", "maxTextChars", "maxTextOffset", "readOnly"],
+          "properties": {
+            "schema": {"const": "com.krauq.ufo.pdf-pages"}, "schemaVersion": {"const": 1}, "selector": {"const": "pages"},
+            "maxSourceBytes": {"const": 25165824}, "maxTextChars": {"const": 32768},
+            "maxTextOffset": {"const": 4194304}, "readOnly": {"const": true}
+          }
+        },
+        "pdfOutlineReads": {"type": "object", "additionalProperties": false, "required": ["schema", "schemaVersion", "selector", "maxSourceBytes", "maxEntries", "maxDepth", "maxPageSize", "maxTitleChars"], "properties": {"schema": {"const": "com.krauq.ufo.pdf-outline"}, "schemaVersion": {"const": 1}, "selector": {"const": "outline"}, "maxSourceBytes": {"type": "integer", "minimum": 1}, "maxEntries": {"const": 4000}, "maxDepth": {"const": 24}, "maxPageSize": {"const": 200}, "maxTitleChars": {"const": 1024}}},
+        "pdfFormReads": {
+          "type": "object", "additionalProperties": false,
+          "required": ["schema", "schemaVersion", "selector", "maxSourceBytes", "maxFieldNodes", "maxDepth", "maxPageSize", "maxNameChars", "maxValueChars", "maxArrayItems", "maxFieldChars", "encryptedSources"],
+          "properties": {
+            "schema": {"const": "com.krauq.ufo.pdf-forms"}, "schemaVersion": {"const": 1}, "selector": {"const": "forms"},
+            "maxSourceBytes": {"const": 25165824}, "maxFieldNodes": {"const": 5000}, "maxDepth": {"const": 128},
+            "maxPageSize": {"const": 200}, "maxNameChars": {"const": 512}, "maxValueChars": {"const": 4096},
+            "maxArrayItems": {"const": 100}, "maxFieldChars": {"const": 32768}, "encryptedSources": {"const": "refused"}
+          }
+        },
+        "xlsxFind": {
+          "type": "object", "additionalProperties": false,
+          "required": ["maxSourceBytes", "maxStoredCells", "maxTextChars"],
+          "properties": {
+            "maxSourceBytes": { "type": "integer", "minimum": 1 },
+            "maxStoredCells": { "type": "integer", "minimum": 1 },
+            "maxTextChars": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "epubChapters": {
+          "description": "Declared EPUB chapter inventory and read-only UTF-16 text windows; missing entries retain their chapter identities.",
+          "type": "object", "additionalProperties": false,
+          "required": ["schema", "schemaVersion", "selector", "maxSourceBytes", "maxChapters", "maxPageSize", "maxChapterBytes", "maxTextChars", "maxTextOffset"],
+          "properties": {
+            "schema": {"const": "com.krauq.ufo.epub-chapters"}, "schemaVersion": {"const": 1}, "selector": {"const": "chapter"},
+            "maxSourceBytes": {"const": 25165824}, "maxChapters": {"const": 5000}, "maxPageSize": {"const": 200},
+            "maxChapterBytes": {"const": 4194304}, "maxTextChars": {"const": 32768}, "maxTextOffset": {"const": 4194304}
+          }
+        },
+        "bookText": {
+          "description": "Stricter EPUB/Mobipocket text extraction bounds; incomplete declared EPUB reading order refuses.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["maxSourceBytes", "maxTextChars", "maxChapters"],
+          "properties": {
+            "maxSourceBytes": { "type": "integer", "minimum": 1 },
+            "maxTextChars": { "type": "integer", "minimum": 1 },
+            "maxChapters": { "type": "integer", "minimum": 1 }
+          }
+        },
         "workerTimeoutMillis": {
           "type": "object",
           "additionalProperties": false,

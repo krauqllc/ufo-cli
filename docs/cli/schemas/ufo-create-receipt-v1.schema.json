@@ -81,6 +81,10 @@
               "type": "array",
               "maxItems": 32,
               "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+            },
+            "bareQuotes": {
+              "description": "Present exactly when a CSV or TSV source was read with --bare-quotes literal (MCP bareQuotes: literal): a quote inside a field that does not start with one was written into its cell as an ordinary character, as the UFO apps read it. Absent under the default, which refuses such a source.",
+              "const": "literal"
             }
           }
         },

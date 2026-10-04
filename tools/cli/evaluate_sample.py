@@ -38,8 +38,8 @@ from tools.corpus.evaluate_edit_corpus import restricted_docker_prefix
 SAMPLE_TEXT = "UFO synthetic evaluation.\nVisible text survives metadata cleaning."
 # The suite's identity and size: the evaluation kit checks an extracted run against both,
 # so a changed step list is a deliberate version bump here, never an accident downstream.
-SUITE_VERSION = 26
-COMMAND_COUNT = 130
+SUITE_VERSION = 28
+COMMAND_COUNT = 138
 AUTHOR = "UFO Synthetic Author"
 # The rendered pictures this suite asks for are 400 pixels wide; the oracle
 # decodes nothing larger, so a runaway render is a failure, not a long wait.
@@ -180,18 +180,19 @@ EXPECTED = {
         "duplicates": {"identical": [], "sameNameDifferentBytes": []},
         "mismatches": [],
     },
-    # One needle across the same folder: ten of the generated files carry "client" in some case,
+    # One needle across the same folder: nine files carry "client" in a searchable value,
     # the CSV among them, searched field by field, and seven are ruled out by the byte pre-filter
     # without any read; find addresses every family generated here, so none is skipped. The three
     # pictures are searched rather than skipped, because a picture holds no text of its own and
     # only a reading of its pixels can answer; none of them carries the needle.
+    # update.json carries it only as a key, excluded by the JSON scalar-value contract.
     "find-folder": {
         "status": "completed",
         "needle": {"text": "client", "ignoreCase": True, "regex": False},
         "totals": {
             "roots": 1, "filesWalked": 22, "filesSearched": 15, "filesRejected": 7,
-            "filesSkipped": 0, "filesWithHits": 10, "filesWithoutHits": 12,
-            "matches": 11, "hits": 11, "truncated": False,
+            "filesSkipped": 0, "filesWithHits": 9, "filesWithoutHits": 13,
+            "matches": 10, "hits": 10, "truncated": False,
         },
     },
 }
@@ -1577,6 +1578,7 @@ def run_evaluation(args: argparse.Namespace) -> dict:
             else:
                 require(row["results"] is None, f"find-folder.files.{name}: a file that was never read carries results")
         filtered_hits = {name: (row["results"] or {}).get("hits", []) for name, row in rows.items()}
+        require_subset(rows["update.json"]["results"], {"total": 0, "hits": [], "truncated": False}, "find-folder.json-key-only")
         whole = run("find-folder-unfiltered", [*needle, "--no-prefilter", "-o", f"{output_root}/found-unfiltered.json", "--", input_root], "com.krauq.ufo.find-folder-results")
         whole_rows = {row["path"].rsplit("/", 1)[-1]: row for row in whole["files"]}
         require(
@@ -1835,6 +1837,7 @@ def run_evaluation(args: argparse.Namespace) -> dict:
             paragraph_validator.validate(page)
             require_subset(page, {
                 "source": {"sha256": source_hash}, "offset": offset, "totalParagraphs": 2,
+                "stories": [{"story": "main", "part": "word/document.xml"}], "storiesComplete": True,
                 "nextOffset": 1 if offset == 0 else None, "partial": False,
                 "paragraphs": [{
                     "index": offset, "text": line, "inTable": False, "table": None,
@@ -2171,7 +2174,7 @@ def run_evaluation(args: argparse.Namespace) -> dict:
         inventory = json.loads(read_bounded(outputs / "cells-inventory.json"))
         cells_validator.validate(inventory)
         require_subset(inventory, {"source": {"sha256": workbook_hash}, "selection": None, "sheets": [{"index": 0, "name": "Summary", "part": "xl/worksheets/sheet1.xml", "visibility": "visible",
-                          "dimension": "A1:D1", "dimensionSource": "declared", "charts": [], "chartsComplete": True,
+                          "dimension": "A1:D1", "dimensionSource": "declared", "storedDimension": "A1:D1", "charts": [], "chartsComplete": True,
                           "validations": [], "validationsComplete": True,
                           "conditionalFormats": [], "conditionalFormatsComplete": True}]}, "cells-inventory")
         range_receipt = document_step("cells-range", [
@@ -2182,10 +2185,10 @@ def run_evaluation(args: argparse.Namespace) -> dict:
         cell_page = json.loads(read_bounded(outputs / "cells-range.json"))
         cells_validator.validate(cell_page)
         require_subset(cell_page["selection"], {"sheet": "Summary", "range": "A1:D1", "cells": [
-            {"ref": "A1", "row": 1, "column": 1, "type": "string", "value": "Client A", "formula": None, "cachedValue": None, "limitation": None},
-            {"ref": "B1", "row": 1, "column": 2, "type": "number", "value": "10", "formula": None, "cachedValue": None, "limitation": None},
-            {"ref": "C1", "row": 1, "column": 3, "type": "boolean", "value": "TRUE", "formula": None, "cachedValue": None, "limitation": None},
-            {"ref": "D1", "row": 1, "column": 4, "type": "formula", "value": None, "formula": "=B1*2", "cachedValue": "20", "limitation": None},
+            {"ref": "A1", "row": 1, "column": 1, "type": "string", "value": "Client A", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "editable": True, "editRefusal": None},
+            {"ref": "B1", "row": 1, "column": 2, "type": "number", "value": "10", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "editable": True, "editRefusal": None},
+            {"ref": "C1", "row": 1, "column": 3, "type": "boolean", "value": "TRUE", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "editable": True, "editRefusal": None},
+            {"ref": "D1", "row": 1, "column": 4, "type": "formula", "value": None, "formula": "=B1*2", "cachedValue": "20", "limitation": None, "valueLimitation": None, "editable": True, "editRefusal": None},
         ]}, "cells-range")
         cell_batch = ["edit", "cells", "--expect-sha256", workbook_hash, "--expect", "A1=string:Client A", "--set", "A1=string:Client B", "--expect", "B1=number:10", "--set", "B1=number:20"]
         cell_edit = document_step("cells-batch", [*cell_batch, "-o", f"{output_root}/edited.xlsx", workbook], "edit-receipt", inputs / "data.xlsx")
@@ -2589,10 +2592,40 @@ def run_evaluation(args: argparse.Namespace) -> dict:
         require("a deck keeps at least one slide" in refused["message"], "the refusal does not say that a deck keeps at least one slide")
         require(not path_exists(outputs / "deck-emptied.pptx"), "a refused slide batch published an output")
 
-        # ---- JSON: guarded pointer writes with literal numbers preserved ----
+        # ---- JSON: selected typed reads feed guarded pointer writes without normalizing numbers ----
         update = f"{input_root}/update.json"
         update_hash = source_identities["update.json"]["sha256"]
-        field_batch = ["edit", "fields", "--expect-sha256", update_hash, "--expect", "/status=string:draft", "--set", "/status=string:final", "--expect", "/items/0/done=boolean:false", "--set", "/items/0/done=boolean:true"]
+        fields_validator = validator_for("com.krauq.ufo.json-fields", 1)
+        require(fields_validator is not None, "json-fields schema is missing")
+        found_receipt = document_step("fields-find", ["find", "--text", "draft", "--expect-sha256", update_hash,
+            "-o", f"{output_root}/fields-find.json", update], "text-receipt", inputs / "update.json")
+        require_subset(found_receipt, {"status": "completed", "result": {"method": "find-results"}}, "fields-find")
+        found_fields = json.loads(read_bounded(outputs / "fields-find.json").decode("utf-8"))
+        validator_for("com.krauq.ufo.find-results", 1).validate(found_fields)
+        require_subset(found_fields, {"source": {"sha256": update_hash}, "total": 1, "truncated": False}, "fields-find")
+        require(len(found_fields["hits"]) == 1, "JSON Find returned other values")
+        require_subset(found_fields["hits"][0], {"kind": "json", "pointer": "/status", "type": "string",
+            "offset": 0, "length": 5, "editable": True}, "fields-find")
+        for label, pointer in (("fields-read", ""), ("fields-scalar", "/items/0/done")):
+            read_receipt = document_step(label, ["text", "--format", "structure", "--pointer", pointer,
+                "--expect-sha256", update_hash, "-o", f"{output_root}/{label}.json", update], "text-receipt", inputs / "update.json")
+            require_subset(read_receipt, {"status": "completed", "result": {"method": "json-fields"}}, label)
+            read = json.loads(read_bounded(outputs / f"{label}.json").decode("utf-8"))
+            fields_validator.validate(read)
+            require_subset(read, {"source": {"sha256": update_hash}, "pointer": pointer, "partial": False, "nextOffset": None}, label)
+            if not pointer:
+                rows = {row["pointer"]: row for row in read["items"]}
+                require([row["pointer"] for row in read["items"]] == ["/client", "/status", "/amount", "/items"], "JSON members changed source order")
+                require_subset(rows["/amount"], {"type": "number", "value": "1.50", "editable": True}, label)
+                require_subset(rows["/items"], {"type": "array", "value": None, "children": 1, "editable": False}, label)
+                status = rows["/status"]
+            else:
+                require(len(read["items"]) == 1, "selected scalar returned other members")
+                done = read["items"][0]
+                require_subset(done, {"pointer": pointer, "type": "boolean", "value": "false", "editable": True}, label)
+        field_batch = ["edit", "fields", "--expect-sha256", update_hash,
+            "--expect", f"{status['pointer']}={status['type']}:{status['value']}", "--set", "/status=string:final",
+            "--expect", f"{done['pointer']}={done['type']}:{done['value']}", "--set", "/items/0/done=boolean:true"]
         field_edit = document_step("fields-batch", [*field_batch, "-o", f"{output_root}/update-final.json", update], "edit-receipt", inputs / "update.json")
         require_subset(field_edit, {"status": "completed", "result": {"engine": "json-fields"}}, "fields-batch")
         require_subset(field_edit["output"], identity(outputs / "update-final.json"), "fields-batch.output")
@@ -2603,6 +2636,26 @@ def run_evaluation(args: argparse.Namespace) -> dict:
         refused = document_step("fields-preimage", ["edit", "fields", "--expect-sha256", update_hash, "--expect", "/status=string:final", "--set", "/status=string:x", "-o", f"{output_root}/fields-preimage.json", update], "edit-receipt", inputs / "update.json", 1)
         require_subset(refused, {"status": "refused", "output": None}, "fields-preimage")
         require(not path_exists(outputs / "fields-preimage.json"), "a refused field batch published an output")
+
+        # ---- CSV: selected strings feed byte-preserving addressed field writes ----
+        delimited_validator = validator_for("com.krauq.ufo.delimited-fields", 1)
+        require(delimited_validator is not None, "delimited-fields schema is missing")
+        rows_hash = source_identities["rows.csv"]["sha256"]
+        rows_source = f"{input_root}/rows.csv"
+        read_receipt = document_step("delimited-read", ["text", "--format", "structure", "--range", "A3:C3",
+            "--expect-sha256", rows_hash, "-o", f"{output_root}/delimited-read.json", rows_source], "text-receipt", inputs / "rows.csv")
+        require_subset(read_receipt, {"status": "completed", "result": {"method": "delimited-fields"}}, "delimited-read")
+        row_page = json.loads(read_bounded(outputs / "delimited-read.json").decode("utf-8"))
+        delimited_validator.validate(row_page)
+        require_subset(row_page, {"source": {"sha256": rows_hash}, "range": "A3:C3", "rowCount": 3, "columnCount": 3, "partial": False}, "delimited-read")
+        require([cell["value"] for cell in row_page["items"]] == ["Beta, Inc", "0", "false"], "CSV read inferred types or changed decoded values")
+        target = row_page["items"][0]
+        require_subset(target, {"field": "R3C1", "type": "string", "editable": True}, "delimited-read")
+        edited_rows = document_step("delimited-write", ["edit", "fields", "--expect-sha256", row_page["source"]["sha256"],
+            "--expect", f"{target['field']}=string:{target['value']}", "--set", f"{target['field']}=string:Beta renewed",
+            "-o", f"{output_root}/rows-final.csv", rows_source], "edit-receipt", inputs / "rows.csv")
+        require_subset(edited_rows, {"status": "completed", "result": {"engine": "csv-fields"}}, "delimited-write")
+        require(read_bounded(outputs / "rows-final.csv") == ROWS_CSV.replace('"Beta, Inc"', "Beta renewed").encode("utf-8"), "CSV edit rewrote an untouched byte")
 
         # ---- DOCX: native tracked changes and an anchored comment, checked by an independent XML reader ----
         W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -3053,7 +3106,7 @@ def run_evaluation(args: argparse.Namespace) -> dict:
         cells_validator.validate(charted_sheets)
         require_subset(charted_sheets, {"sheets": [{
             "index": 0, "name": "Quarters", "part": "xl/worksheets/sheet1.xml", "visibility": "visible",
-            "dimension": "A1:C5", "dimensionSource": "declared", "chartsComplete": True,
+            "dimension": "A1:C5", "dimensionSource": "declared", "storedDimension": "A1:C5", "chartsComplete": True,
             "charts": [
                 {"index": 1, "part": "xl/charts/chart1.xml", "title": "Revenue", "type": "bar", "series": ["Revenue", "Cost"]},
                 {"index": 2, "part": "xl/charts/chart2.xml", "title": None, "type": "line", "series": ["Cost"]},
@@ -3295,12 +3348,31 @@ def run_evaluation(args: argparse.Namespace) -> dict:
         pages_validator.validate(pdf_inventory)
         require_subset(pdf_inventory, {"source": {"sha256": report_hash}, "pageCount": 3, "selection": None, "partial": False}, "pdf-inventory")
         require([page["textless"] for page in pdf_inventory["pages"]] == [False, True, False], "page inventory did not mark the textless page only")
+        outline_validator = validator_for("com.krauq.ufo.pdf-outline", 1)
+        require(outline_validator is not None, "pdf-outline schema is missing")
+        outline_receipt = document_step("pdf-outline", ["text", "--format", "structure", "--outline", "--expect-sha256", report_hash, "-o", f"{output_root}/pdf-outline.json", report_pdf], "text-receipt", inputs / "report.pdf")
+        require_subset(outline_receipt, {"status": "completed", "result": {"method": "pdf-outline"}}, "pdf-outline")
+        outline = json.loads(read_bounded(outputs / "pdf-outline.json").decode("utf-8"))
+        outline_validator.validate(outline)
+        require_subset(outline, {"source": {"sha256": report_hash}, "entryCount": 0, "treeComplete": True, "entries": [], "partial": False}, "pdf-outline")
         pdf_read_receipt = document_step("pdf-page-read", ["text", "--format", "structure", "--pages", "3", "--expect-sha256", report_hash, "-o", f"{output_root}/pdf-page-3.json", report_pdf], "text-receipt", inputs / "report.pdf")
         require_subset(pdf_read_receipt, {"status": "completed", "result": {"method": "pdf-pages"}}, "pdf-page-read")
         pdf_page = json.loads(read_bounded(outputs / "pdf-page-3.json").decode("utf-8"))
         pages_validator.validate(pdf_page)
         items = pdf_page["selection"]["items"]
         require(len(items) == 1 and items[0]["index"] == 3 and items[0]["text"].strip() == PDF_PAGE_TEXTS[2] and not items[0]["truncated"], "selected page read did not return page three's text")
+        window_text = []
+        for label, offset, limit, continuation in (("first", 0, 10, 10), ("rest", 10, 32768, None)):
+            name = f"pdf-page-window-{label}"
+            window_receipt = document_step(name, ["text", "--format", "structure", "--pages", "3", "--offset", str(offset), "--limit", str(limit), "--expect-sha256", report_hash, "-o", f"{output_root}/{name}.json", report_pdf], "text-receipt", inputs / "report.pdf")
+            require_subset(window_receipt, {"status": "completed", "result": {"method": "pdf-pages"}}, name)
+            read = json.loads(read_bounded(outputs / f"{name}.json"))
+            pages_validator.validate(read)
+            require_subset(read, {"source": {"sha256": report_hash}, "selection": {"window": {"offset": offset, "limit": limit, "nextOffset": continuation}}, "partial": True}, name)
+            row = read["selection"]["items"][0]
+            require(row["index"] == 3 and row["paragraphs"] == [] and "ocr" not in read, "PDF text window exposed edit models or recognized pixels")
+            window_text.append(row["text"])
+        require("".join(window_text) == items[0]["text"], "PDF windows did not reconstruct the selected page exactly")
         kept = document_step("pdf-keep", ["edit", "pages", "--keep", "3", "-o", f"{output_root}/appendix-3.pdf", report_pdf], "edit-receipt", inputs / "report.pdf")
         require_subset(kept, {"status": "completed", "result": {"engine": "pdf-pages"}}, "pdf-keep")
         require_subset(kept["output"], identity(outputs / "appendix-3.pdf"), "pdf-keep.output")

@@ -243,7 +243,7 @@
       }
     },
     "text": {
-      "description": "The unit level diff, in the same units `ufo text --format structure` exposes. skipped when the two files are byte identical, are read in different units, or are not a family a structured read covers; refused when a side is past a compare ceiling or a read refused.",
+      "description": "The unit level diff, in the units `ufo text` exposes through structure or native book JSON extraction. skipped when the two files are byte identical, are read in different units, or have no supported unit reader; refused when a side is past a compare ceiling or a read refused.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -263,7 +263,7 @@
       ],
       "properties": {
         "status": { "enum": ["completed", "skipped", "refused", "failed"] },
-        "unit": { "enum": ["paragraph", "cell", "page", "line", "shape", null] },
+        "unit": { "enum": ["paragraph", "cell", "page", "line", "shape", "book", null] },
         "units": {
           "oneOf": [
             {
@@ -353,6 +353,7 @@
         "maxPages": { "type": "integer", "minimum": 1 },
         "maxLines": { "type": "integer", "minimum": 1 },
         "maxSlides": { "type": "integer", "minimum": 1 },
+        "maxBookUnits": { "type": "integer", "minimum": 1, "maximum": 500 },
         "maxMemberRows": { "type": "integer", "minimum": 1 },
         "maxChangeRows": { "type": "integer", "minimum": 1 },
         "maxChangeChars": { "type": "integer", "minimum": 1 }
@@ -488,7 +489,28 @@
         { "$ref": "#/$defs/cellChange" },
         { "$ref": "#/$defs/shapeChange" },
         { "$ref": "#/$defs/pageChange" },
-        { "$ref": "#/$defs/lineChange" }
+        { "$ref": "#/$defs/lineChange" },
+        { "$ref": "#/$defs/bookChange" }
+      ]
+    },
+    "bookChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["change", "kind", "format", "unit", "label", "editable", "a", "b", "command"],
+      "properties": {
+        "change": { "enum": ["added", "removed", "changed"] },
+        "kind": { "const": "book" },
+        "format": { "enum": ["epub", "mobi"] },
+        "unit": { "type": "integer", "minimum": 1, "maximum": 500 },
+        "label": { "type": "string", "pattern": "^(chapter [1-9][0-9]{0,2}|book)$" },
+        "editable": { "const": false },
+        "a": { "$ref": "#/$defs/unitText" },
+        "b": { "$ref": "#/$defs/unitText" },
+        "command": { "type": "null" }
+      },
+      "allOf": [
+        { "if": { "properties": { "format": { "const": "mobi" } } }, "then": { "properties": { "unit": { "const": 1 }, "label": { "const": "book" } } } },
+        { "if": { "properties": { "format": { "const": "epub" } } }, "then": { "properties": { "label": { "pattern": "^chapter [1-9][0-9]{0,2}$" } } } }
       ]
     },
     "paragraphChange": {
@@ -507,7 +529,7 @@
       }
     },
     "cellChange": {
-      "description": "One worksheet cell. Both sides are the typed value `edit cells --expect` consumes: `number:10`, `string:Total`, `formula:=SUM(B2:B4)`, `empty:`.",
+      "description": "One worksheet cell. Both sides are typed values: `number:10`, `string:Total`, `formula:=SUM(B2:B4)`, and `empty:` for an empty cell, which `edit cells --expect` and the command template spell `empty`. An empty cell inside one file's used range and outside the other's is unchanged, not a change.",
       "type": "object",
       "additionalProperties": false,
       "required": ["change", "kind", "sheet", "ref", "row", "column", "editable", "a", "b", "command"],

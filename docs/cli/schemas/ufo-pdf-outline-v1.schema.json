@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-pdf-outline-v1.schema.json",
+  "title": "UFO PDF outline v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "source",
+    "entryCount",
+    "treeComplete",
+    "offset",
+    "limit",
+    "nextOffset",
+    "entries",
+    "partial",
+    "scope"
+  ],
+  "properties": {
+    "schema": {"const": "com.krauq.ufo.pdf-outline"},
+    "schemaVersion": {"const": 1},
+    "source": {"type": "object", "additionalProperties": false, "required": ["name", "sha256"], "properties": {"name": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
+    "entryCount": {"description": "Visited items, a lower bound when treeComplete is false.", "type": "integer", "minimum": 0, "maximum": 4000},
+    "treeComplete": {"type": "boolean"},
+    "offset": {"type": "integer", "minimum": 0, "maximum": 4000},
+    "limit": {"type": "integer", "minimum": 1, "maximum": 200},
+    "nextOffset": {"type": ["integer", "null"], "minimum": 1, "maximum": 4000},
+    "entries": {"type": "array", "maxItems": 200, "items": {"type": "object", "additionalProperties": false, "required": ["index", "level", "title", "titleTruncated", "page", "limitation"], "properties": {"index": {"type": "integer", "minimum": 1, "maximum": 4000}, "level": {"type": "integer", "minimum": 0, "maximum": 24}, "title": {"type": "string", "maxLength": 1024}, "titleTruncated": {"type": "boolean"}, "page": {"type": ["integer", "null"], "minimum": 1, "maximum": 200001}, "limitation": {"enum": [null, "destination_unresolved"]}}, "allOf": [{"if": {"properties": {"page": {"type": "null"}}}, "then": {"properties": {"limitation": {"const": "destination_unresolved"}}}, "else": {"properties": {"limitation": {"type": "null"}}}}]}},
+    "partial": {"type": "boolean"},
+    "scope": {"const": "PDF outline items in depth-first tree order, including blank titles; decoded titles are trimmed; local page destinations are resolved by the shared reader, unresolved and external destinations stay null; treeComplete concerns traversal, not destination validity; entryCount is a lower bound when traversal is incomplete; page text, links, external actions and edit coordinates are not read"}
+  },
+  "allOf": [{"if": {"anyOf": [{"properties": {"offset": {"minimum": 1}}}, {"properties": {"nextOffset": {"type": "integer"}}}, {"properties": {"treeComplete": {"const": false}}}, {"properties": {"entries": {"contains": {"properties": {"titleTruncated": {"const": true}}, "required": ["titleTruncated"]}}}}]}, "then": {"properties": {"partial": {"const": true}}}, "else": {"properties": {"partial": {"const": false}}}}]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-pdf-forms-v1.schema.json",
+  "title": "UFO paged PDF forms v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "source", "offset", "totalFields", "nextOffset", "fields", "partial", "scope"],
+  "properties": {
+    "schema": {"const": "com.krauq.ufo.pdf-forms"},
+    "schemaVersion": {"const": 1},
+    "source": {
+      "type": "object", "additionalProperties": false, "required": ["name", "sha256"],
+      "properties": {"name": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+    },
+    "offset": {"type": "integer", "minimum": 0, "maximum": 5000},
+    "totalFields": {"type": "integer", "minimum": 0, "maximum": 5000},
+    "nextOffset": {"type": ["integer", "null"], "minimum": 1, "maximum": 5000},
+    "fields": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/field"}},
+    "partial": {"type": "boolean"},
+    "scope": {"const": "AcroForm logical fields in tree order, with current text/button/choice values, button states and choice exports from the shared reader; editable means a unique named supported field within these previews, not a guarantee that a requested fill can be written; signature values, page text, placement, XFA and appearance fidelity are not read"}
+  },
+  "allOf": [{
+    "if": {"properties": {"fields": {"contains": {"properties": {"truncated": {"const": true}}, "required": ["truncated"]}}}},
+    "then": {"properties": {"partial": {"const": true}}},
+    "else": {"properties": {"partial": {"const": false}}}
+  }],
+  "$defs": {
+    "textValues": {"type": "array", "maxItems": 100, "items": {"type": "string", "maxLength": 4096}},
+    "limitation": {"enum": ["preview_limit", "missing_name", "ambiguous_name", "inconsistent_widgets", "read_only", "unsupported_type", "missing_button_state"]},
+    "field": {
+      "type": "object", "additionalProperties": false,
+      "required": ["objectNumber", "widgetCount", "name", "type", "flags", "maxLength", "values", "onStates", "choices", "multiSelect", "customText", "editable", "limitation", "truncated"],
+      "properties": {
+        "objectNumber": {"type": "integer", "minimum": 1},
+        "widgetCount": {"type": "integer", "minimum": 1, "maximum": 5000},
+        "name": {"type": ["string", "null"], "maxLength": 512},
+        "type": {"type": ["string", "null"], "maxLength": 64},
+        "flags": {"type": ["integer", "null"], "minimum": 0, "maximum": 2147483647},
+        "maxLength": {"type": ["integer", "null"], "minimum": 0, "maximum": 2147483647},
+        "values": {"$ref": "#/$defs/textValues"},
+        "onStates": {"$ref": "#/$defs/textValues"},
+        "choices": {
+          "type": "array", "maxItems": 100,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["exportValue", "label"],
+            "properties": {"exportValue": {"type": "string", "maxLength": 4096}, "label": {"type": "string", "maxLength": 4096}}
+          }
+        },
+        "multiSelect": {"type": "boolean"},
+        "customText": {"type": "boolean"},
+        "editable": {"type": "boolean"},
+        "limitation": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/limitation"}]},
+        "truncated": {"type": "boolean"}
+      },
+      "allOf": [
+        {"if": {"properties": {"type": {"not": {"const": "Tx"}}}},
+         "then": {"properties": {"maxLength": {"type": "null"}}}},
+        {"if": {"properties": {"editable": {"const": true}}},
+         "then": {"properties": {"limitation": {"type": "null"}, "truncated": {"const": false}, "name": {"type": "string", "minLength": 1}, "type": {"enum": ["Tx", "Ch", "Btn"]}}},
+         "else": {"properties": {"limitation": {"$ref": "#/$defs/limitation"}}}},
+        {"if": {"properties": {"truncated": {"const": true}}},
+         "then": {"properties": {"editable": {"const": false}, "limitation": {"const": "preview_limit"}}},
+         "else": {"properties": {"limitation": {"not": {"const": "preview_limit"}}}}},
+        {"if": {"properties": {"type": {"const": "Btn"}, "editable": {"const": true}}},
+         "then": {"properties": {"onStates": {"minItems": 1}}}},
+        {"if": {"properties": {"type": {"not": {"const": "Ch"}}}},
+         "then": {"properties": {"choices": {"maxItems": 0}, "multiSelect": {"const": false}, "customText": {"const": false}}}},
+        {"if": {"properties": {"type": {"not": {"const": "Btn"}}}},
+         "then": {"properties": {"onStates": {"maxItems": 0}}}}
+      ]
+    }
+  }
+}

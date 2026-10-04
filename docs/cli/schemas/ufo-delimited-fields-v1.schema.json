@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-delimited-fields-v1.schema.json",
+  "title": "UFO selected delimited fields v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "source", "encoding", "delimiter", "rowCount", "columnCount", "range", "items", "partial", "scope"],
+  "properties": {
+    "schema": {"const": "com.krauq.ufo.delimited-fields"},
+    "schemaVersion": {"const": 1},
+    "source": {"type": "object", "additionalProperties": false, "required": ["name", "sha256"],
+      "properties": {"name": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
+    "encoding": {"enum": ["utf-8", "utf-8-bom"]},
+    "delimiter": {"enum": [",", ";", "\t", "|"]},
+    "bareQuotes": {"description": "Present exactly when the read ran with --bare-quotes literal (MCP bareQuotes: literal): a quote inside a field that does not start with one was read as an ordinary character, as the UFO apps read it, so a guarded edit fields of these preimages takes the same mode. Absent under the default, which refuses such a file.", "const": "literal"},
+    "rowCount": {"type": "integer", "minimum": 0, "maximum": 100000},
+    "columnCount": {"type": "integer", "minimum": 0, "maximum": 4096},
+    "range": {"type": "string", "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,5}:[A-Z]{1,3}[1-9][0-9]{0,5}$"},
+    "items": {"type": "array", "minItems": 1, "maxItems": 2000, "items": {"$ref": "#/$defs/item"}},
+    "partial": {"type": "boolean"},
+    "scope": {"const": "the selected rectangle of UTF-8 delimited fields with exact decoded string preimages and one-based edit addresses; absent ragged fields are explicit and read-only; nothing is inferred as a number or formula"}
+  },
+  "allOf": [{
+    "if": {"properties": {"items": {"contains": {"properties": {"truncated": {"const": true}}, "required": ["truncated"]}}}},
+    "then": {"properties": {"partial": {"const": true}}}, "else": {"properties": {"partial": {"const": false}}}
+  }],
+  "$defs": {
+    "item": {
+      "type": "object", "additionalProperties": false,
+      "required": ["field", "ref", "row", "column", "type", "value", "editable", "truncated"],
+      "properties": {
+        "field": {"type": "string", "pattern": "^R[1-9][0-9]{0,5}C[1-9][0-9]{0,3}$"},
+        "ref": {"type": "string", "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,5}$"},
+        "row": {"type": "integer", "minimum": 1, "maximum": 100000},
+        "column": {"type": "integer", "minimum": 1, "maximum": 4096},
+        "type": {"enum": ["string", "missing"]},
+        "value": {"type": ["string", "null"], "maxLength": 32767},
+        "editable": {"type": "boolean"}, "truncated": {"type": "boolean"}
+      },
+      "allOf": [
+        {"if": {"properties": {"type": {"const": "missing"}}},
+         "then": {"properties": {"value": {"type": "null"}, "editable": {"const": false}, "truncated": {"const": false}}},
+         "else": {"properties": {"value": {"type": "string"}}}},
+        {"if": {"properties": {"truncated": {"const": true}}}, "then": {"properties": {"editable": {"const": false}}}}
+      ]
+    }
+  }
+}

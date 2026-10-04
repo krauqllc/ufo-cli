@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-json-fields-v1.schema.json",
+  "title": "UFO selected JSON fields v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "source", "pointer", "type", "offset", "totalItems", "nextOffset", "items", "partial", "scope"],
+  "properties": {
+    "schema": {"const": "com.krauq.ufo.json-fields"},
+    "schemaVersion": {"const": 1},
+    "source": {
+      "type": "object", "additionalProperties": false, "required": ["name", "sha256"],
+      "properties": {"name": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+    },
+    "pointer": {"$ref": "#/$defs/pointer"},
+    "type": {"enum": ["object", "array", "string", "number", "boolean", "null"]},
+    "offset": {"type": "integer", "minimum": 0, "maximum": 200000},
+    "totalItems": {"type": "integer", "minimum": 0, "maximum": 200000},
+    "nextOffset": {"type": ["integer", "null"], "minimum": 1, "maximum": 200000},
+    "items": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/item"}},
+    "partial": {"type": "boolean"},
+    "scope": {"const": "the selected JSON scalar or a page of the selected object's or array's direct members; nested containers require another pointer read; truncated values and the document root are read-only"}
+  },
+  "allOf": [{
+    "if": {"properties": {"items": {"contains": {"properties": {"truncated": {"const": true}}, "required": ["truncated"]}}}},
+    "then": {"properties": {"partial": {"const": true}}},
+    "else": {"properties": {"partial": {"const": false}}}
+  }],
+  "$defs": {
+    "pointer": {"type": "string", "maxLength": 4096, "pattern": "^(?:/(?:[^~]|~[01])*)?$"},
+    "item": {
+      "type": "object", "additionalProperties": false,
+      "required": ["pointer", "type", "value", "children", "editable", "truncated"],
+      "properties": {
+        "pointer": {"$ref": "#/$defs/pointer"},
+        "type": {"enum": ["object", "array", "string", "number", "boolean", "null"]},
+        "value": {"type": ["string", "null"], "maxLength": 32767},
+        "children": {"type": ["integer", "null"], "minimum": 0, "maximum": 200000},
+        "editable": {"type": "boolean"},
+        "truncated": {"type": "boolean"}
+      },
+      "allOf": [
+        {"if": {"properties": {"type": {"enum": ["object", "array"]}}},
+         "then": {"properties": {"value": {"type": "null"}, "children": {"type": "integer"}, "editable": {"const": false}, "truncated": {"const": false}}},
+         "else": {"properties": {"children": {"type": "null"}}}},
+        {"if": {"properties": {"type": {"const": "null"}}},
+         "then": {"properties": {"value": {"type": "null"}, "truncated": {"const": false}}}},
+        {"if": {"properties": {"type": {"enum": ["string", "number", "boolean"]}}},
+         "then": {"properties": {"value": {"type": "string"}}}},
+        {"if": {"properties": {"type": {"const": "boolean"}}},
+         "then": {"properties": {"value": {"enum": ["true", "false"]}, "truncated": {"const": false}}}},
+        {"if": {"properties": {"truncated": {"const": true}}}, "then": {"properties": {"editable": {"const": false}}}},
+        {"if": {"properties": {"pointer": {"const": ""}}}, "then": {"properties": {"editable": {"const": false}}}}
+      ]
+    }
+  }
+}

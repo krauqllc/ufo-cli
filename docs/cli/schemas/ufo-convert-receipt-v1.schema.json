@@ -163,6 +163,114 @@
           }
         },
         {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "pages",
+            "raster",
+            "dpi",
+            "note"
+          ],
+          "properties": {
+            "engine": {
+              "const": "ebook-text-pdf"
+            },
+            "pages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "raster": {
+              "const": false
+            },
+            "dpi": {
+              "type": "null"
+            },
+            "note": {
+              "const": "Text conversion reflows readable text. Images, original layout, annotations and interactive content are omitted. Scanned pages need OCR."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "chapters",
+            "reflowable",
+            "note"
+          ],
+          "properties": {
+            "engine": {
+              "const": "text-epub"
+            },
+            "chapters": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "reflowable": {
+              "const": true
+            },
+            "note": {
+              "const": "Text conversion reflows readable text. Images, original layout, annotations and interactive content are omitted. Scanned pages need OCR."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "characters",
+            "reflowable",
+            "note"
+          ],
+          "properties": {
+            "engine": {
+              "const": "text-mobi"
+            },
+            "characters": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2097152
+            },
+            "reflowable": {
+              "const": true
+            },
+            "note": {
+              "const": "Text conversion reflows readable text. Images, original layout, annotations and interactive content are omitted. Scanned pages need OCR."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "characters",
+            "encoding",
+            "note"
+          ],
+          "properties": {
+            "engine": {
+              "const": "ebook-text-txt"
+            },
+            "characters": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2097152
+            },
+            "encoding": {
+              "const": "UTF-8"
+            },
+            "note": {
+              "const": "Text conversion reflows readable text. Images, original layout, annotations and interactive content are omitted. Scanned pages need OCR."
+            }
+          }
+        },
+        {
           "type": "null"
         }
       ]
@@ -227,15 +335,62 @@
       "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "required": [
+        "tier",
+        "organization",
+        "expiresAt",
+        "keyId",
+        "source",
+        "verified",
+        "note"
+      ],
       "properties": {
-        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
-        "organization": { "type": ["string", "null"] },
-        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
-        "keyId": { "type": ["string", "null"] },
-        "source": { "type": ["string", "null"] },
-        "verified": { "type": "boolean" },
-        "note": { "type": ["string", "null"] }
+        "tier": {
+          "enum": [
+            "free",
+            "organization-50",
+            "organization-500",
+            "organization-unbounded"
+          ]
+        },
+        "organization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiresAt": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "keyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "network": {
@@ -310,6 +465,74 @@
           },
           "result": {
             "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "const": "text-mobi"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "output": {
+            "properties": {
+              "path": {
+                "pattern": "\\.[mM][oO][bB][iI]$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "const": "ebook-text-txt"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "output": {
+            "properties": {
+              "path": {
+                "pattern": "\\.[tT][xX][tT]$"
+              }
+            }
           }
         }
       }

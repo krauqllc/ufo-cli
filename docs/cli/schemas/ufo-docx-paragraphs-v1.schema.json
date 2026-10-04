@@ -382,6 +382,40 @@
           }
         ]
       }
+    },
+    "stories": {
+      "description": "Addressable main, placed header/footer and footnote stories, in document order. Content is read separately by story.",
+      "type": "array",
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "story",
+          "part"
+        ],
+        "properties": {
+          "story": {
+            "type": "string",
+            "pattern": "^(main|(header|footer|footnote):[1-9][0-9]{0,3})$"
+          },
+          "part": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "storiesComplete": {
+      "type": "boolean",
+      "description": "False when the story inventory exceeds 128 entries or cannot be read completely. Older v1 pages can omit both inventory fields."
+    },
+    "storiesLimitation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why the story inventory could not be read; present only with storiesComplete false and partial true."
     }
   },
   "$defs": {
@@ -582,21 +616,22 @@
   "allOf": [
     {
       "if": {
-        "properties": {
-          "paragraphs": {
-            "contains": {
-              "type": "object",
-              "required": [
-                "limitation"
-              ],
-              "properties": {
-                "limitation": {
-                  "type": "string"
+        "anyOf": [
+          { "required": ["storiesLimitation"] },
+          {
+            "properties": {
+              "paragraphs": {
+                "contains": {
+                  "type": "object",
+                  "required": ["limitation"],
+                  "properties": {
+                    "limitation": { "type": "string" }
+                  }
                 }
               }
             }
           }
-        }
+        ]
       },
       "then": {
         "properties": {
@@ -610,6 +645,40 @@
           "partial": {
             "const": false
           }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "stories"
+        ]
+      },
+      "then": {
+        "required": [
+          "storiesComplete"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "storiesComplete"
+        ]
+      },
+      "then": {
+        "required": [
+          "stories"
+        ]
+      }
+    },
+    {
+      "if": { "required": ["storiesLimitation"] },
+      "then": {
+        "required": ["stories", "storiesComplete"],
+        "properties": {
+          "storiesComplete": { "const": false },
+          "partial": { "const": true }
         }
       }
     }

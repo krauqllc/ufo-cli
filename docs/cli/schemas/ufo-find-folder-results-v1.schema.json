@@ -101,6 +101,10 @@
         },
         "regex": {
           "type": "boolean"
+        },
+        "bareQuotes": {
+          "description": "Present exactly when the search ran with --bare-quotes literal, which reads every CSV the walk meets in that mode; each searched CSV or TSV row's own needle says so too. Absent under the default.",
+          "const": "literal"
         }
       }
     },
@@ -279,15 +283,62 @@
       "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "required": [
+        "tier",
+        "organization",
+        "expiresAt",
+        "keyId",
+        "source",
+        "verified",
+        "note"
+      ],
       "properties": {
-        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
-        "organization": { "type": ["string", "null"] },
-        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
-        "keyId": { "type": ["string", "null"] },
-        "source": { "type": ["string", "null"] },
-        "verified": { "type": "boolean" },
-        "note": { "type": ["string", "null"] }
+        "tier": {
+          "enum": [
+            "free",
+            "organization-50",
+            "organization-500",
+            "organization-unbounded"
+          ]
+        },
+        "organization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiresAt": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "keyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "network": {
@@ -393,7 +444,7 @@
         "results": {
           "oneOf": [
             {
-              "description": "Where a needle sits in one source revision, in the coordinates the edit verbs consume. Emitted by `ufo find` on standard output, written to the file named by -o, and returned by the MCP find tool. A hit says whether its coordinate is editable; a complex DOCX paragraph, a formula cell, a shape this surface does not edit, a PDF page and every recognized line are read-only. Hits are in document order.",
+              "description": "Where a needle sits in one source revision, as source-revision locations for reading or supported editing. Emitted by `ufo find` on standard output, written to the file named by -o, and returned by the MCP find tool. A hit says whether its coordinate is editable; a complex DOCX paragraph, a formula cell, a shape this surface does not edit, a PDF page, native book text and every recognized line are read-only. Hits are in document order.",
               "type": "object",
               "additionalProperties": false,
               "required": [
@@ -450,6 +501,10 @@
                     },
                     "regex": {
                       "type": "boolean"
+                    },
+                    "bareQuotes": {
+                      "description": "Present exactly when a CSV or TSV file was searched with --bare-quotes literal (MCP bareQuotes: literal): a quote inside a field that does not start with one was read as an ordinary character, as the UFO apps read it, so a guarded edit fields of these hits takes the same mode. Absent under the default, which refuses such a file.",
+                      "const": "literal"
                     }
                   }
                 },
@@ -602,6 +657,12 @@
         },
         {
           "$ref": "#/$defs/fieldHit"
+        },
+        {
+          "$ref": "#/$defs/bookHit"
+        },
+        {
+          "$ref": "#/$defs/jsonHit"
         }
       ]
     },
@@ -854,8 +915,27 @@
         },
         "editable": {
           "type": "boolean"
+        },
+        "limitation": {
+          "const": "value_length_limit"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "limitation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "editable": {
+                "const": false
+              }
+            }
+          }
+        }
+      ]
     },
     "shapeHit": {
       "description": "One PPTX slide paragraph. shapeId is null for speaker notes and for text this surface reports but does not edit.",
@@ -934,6 +1014,81 @@
         }
       }
     },
+    "bookHit": {
+      "description": "Native book text: one-based chapter/unit and UTF-16 offset/length within the matching text --format json unit, not markup or page coordinates. Always read-only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "format",
+        "unit",
+        "label",
+        "offset",
+        "length",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "book"
+        },
+        "format": {
+          "enum": [
+            "epub",
+            "mobi"
+          ]
+        },
+        "unit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "label": {
+          "type": "string",
+          "pattern": "^(chapter [1-9][0-9]{0,2}|book)$"
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "length": {
+          "$ref": "#/$defs/length"
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "const": false
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "format": {
+                "const": "mobi"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unit": {
+                "const": 1
+              },
+              "label": {
+                "const": "book"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "label": {
+                "pattern": "^chapter [1-9][0-9]{0,2}$"
+              }
+            }
+          }
+        }
+      ]
+    },
     "lineHit": {
       "description": "One whole line of a plain text, code, data or Markdown file, by one-based number.",
       "type": "object",
@@ -965,8 +1120,34 @@
         },
         "editable": {
           "type": "boolean"
+        },
+        "limitation": {
+          "const": "line_length_limit"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "editable": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "limitation"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "limitation"
+            ]
+          }
+        }
+      ]
     },
     "fieldHit": {
       "description": "One field of a CSV or TSV file, by the one-based row and column `edit fields` addresses as RnCm. The offset counts characters of the field's value, quotes removed.",
@@ -1008,9 +1189,142 @@
           "$ref": "#/$defs/snippet"
         },
         "editable": {
-          "const": true
+          "type": "boolean"
+        },
+        "limitation": {
+          "enum": [
+            "value_length_limit",
+            "field_request_limit"
+          ]
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "editable": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "limitation": false
+            }
+          },
+          "else": {
+            "required": [
+              "limitation"
+            ]
+          }
+        }
+      ]
+    },
+    "jsonHit": {
+      "description": "A decoded JSON scalar value by JSON Pointer. Offsets count UTF-16 units of decoded strings or literal number/boolean/null text; keys and containers are not searched.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "pointer",
+        "type",
+        "offset",
+        "length",
+        "snippet",
+        "editable"
+      ],
+      "properties": {
+        "kind": {
+          "const": "json"
+        },
+        "pointer": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^(?:/(?:[^~]|~[01])*)?$"
+        },
+        "type": {
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "length": {
+          "$ref": "#/$defs/length"
+        },
+        "snippet": {
+          "$ref": "#/$defs/snippet"
+        },
+        "editable": {
+          "type": "boolean"
+        },
+        "limitation": {
+          "enum": [
+            "document_root",
+            "value_length_limit",
+            "field_request_limit",
+            "value_type_limit"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "editable": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "limitation": false
+            }
+          },
+          "else": {
+            "required": [
+              "limitation"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "pointer": {
+                "const": ""
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "editable": {
+                "const": false
+              },
+              "limitation": {
+                "const": "document_root"
+              }
+            },
+            "required": [
+              "limitation"
+            ]
+          },
+          "else": {
+            "properties": {
+              "limitation": {
+                "enum": [
+                  "value_length_limit",
+                  "field_request_limit",
+                  "value_type_limit"
+                ]
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-epub-chapters-v1.schema.json",
+  "title": "UFO EPUB chapter inventory and text windows v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "source", "chapterCount", "missingChapterCount", "offset", "limit", "nextOffset", "chapters", "selection", "partial", "scope"],
+  "properties": {
+    "schema": {"const": "com.krauq.ufo.epub-chapters"}, "schemaVersion": {"const": 1},
+    "source": {
+      "type": "object", "additionalProperties": false, "required": ["name", "sha256"],
+      "properties": {"name": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+    },
+    "chapterCount": {"type": "integer", "minimum": 1, "maximum": 5000},
+    "missingChapterCount": {"type": "integer", "minimum": 0, "maximum": 5000},
+    "offset": {"description": "Zero-based inventory row, or original UTF-16 text position with a chapter selection.", "type": "integer", "minimum": 0, "maximum": 4194304},
+    "limit": {"type": "integer", "minimum": 1, "maximum": 32768},
+    "nextOffset": {"type": ["integer", "null"], "minimum": 1, "maximum": 4194304},
+    "chapters": {
+      "type": "array", "maxItems": 200,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["index", "path", "title", "entryPresent"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 1, "maximum": 5000},
+          "path": {"type": "string", "minLength": 1, "maxLength": 4096},
+          "title": {"type": "string", "maxLength": 200},
+          "entryPresent": {"type": "boolean"}
+        }
+      }
+    },
+    "selection": {
+      "anyOf": [
+        {"type": "null"},
+        {
+          "type": "object", "additionalProperties": false, "required": ["chapter", "text", "chars", "textless"],
+          "properties": {
+            "chapter": {"type": "integer", "minimum": 1, "maximum": 5000},
+            "text": {"type": "string", "maxLength": 32768},
+            "chars": {"description": "Total selected chapter length in UTF-16 code units, before paging.", "type": "integer", "minimum": 0, "maximum": 4194304},
+            "textless": {"type": "boolean"}
+          }
+        }
+      ]
+    },
+    "partial": {"type": "boolean"},
+    "scope": {"const": "declared EPUB chapter identities, or a UTF-16 text window from one selected chapter; entry presence is not proof of readability; headings and table text are retained, images, layout, scripts and styles are omitted; these are read-only text coordinates"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"selection": {"type": "null"}}},
+      "then": {"properties": {"offset": {"maximum": 5000}, "limit": {"maximum": 200}}},
+      "else": {"properties": {"limit": {"minimum": 2}, "chapters": {"minItems": 1, "maxItems": 1, "items": {"properties": {"entryPresent": {"const": true}}}}}}
+    },
+    {
+      "if": {"anyOf": [
+        {"properties": {"offset": {"minimum": 1}}},
+        {"properties": {"nextOffset": {"type": "integer"}}},
+        {"properties": {"missingChapterCount": {"minimum": 1}}}
+      ]},
+      "then": {"properties": {"partial": {"const": true}}},
+      "else": {"properties": {"partial": {"const": false}}}
+    }
+  ]
+}

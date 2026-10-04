@@ -86,6 +86,16 @@
           "minLength": 1,
           "maxLength": 200
         },
+        "window": {
+          "description": "Present only for explicit paging of one page. Coordinates count UTF-16 code units and match PDF Find text offsets, never paragraph edit IDs.",
+          "type": "object", "additionalProperties": false,
+          "required": ["offset", "limit", "nextOffset"],
+          "properties": {
+            "offset": {"type": "integer", "minimum": 0, "maximum": 4194304},
+            "limit": {"type": "integer", "minimum": 2, "maximum": 32768},
+            "nextOffset": {"type": ["integer", "null"], "minimum": 1, "maximum": 4194304}
+          }
+        },
         "items": {
           "type": "array",
           "minItems": 1,
@@ -340,9 +350,23 @@
     },
     "scope": {
       "enum": [
+        "read-only UTF-16 text window from one selected PDF page as the shipped reader extracts it; paragraph edit models, OCR, images, annotations, form fields and layout are not read; offsets are text coordinates, never edit coordinates",
         "text layer by page as the shipped reader extracts it; a textless page is explicit; images, annotations, form fields and layout are not read",
         "text layer by page as the shipped reader extracts it, and for a selected page that carries none, the lines an offline recognizer read from its pixels; a recognized line is approximate, never an edit coordinate; images, annotations, form fields and layout are not read"
       ]
     }
-  }
+  },
+  "allOf": [{
+    "if": {"properties": {"scope": {"const": "read-only UTF-16 text window from one selected PDF page as the shipped reader extracts it; paragraph edit models, OCR, images, annotations, form fields and layout are not read; offsets are text coordinates, never edit coordinates"}}},
+    "then": {
+      "not": {"anyOf": [{"required": ["recognized"]}, {"required": ["ocr"]}]},
+      "properties": {"selection": {
+        "type": "object", "required": ["window"],
+        "properties": {"items": {"maxItems": 1, "items": {"properties": {
+          "chars": {"maximum": 4194304}, "paragraphs": {"maxItems": 0}
+        }}}}
+      }}
+    },
+    "else": {"properties": {"selection": {"properties": {"window": false}}}}
+  }]
 }

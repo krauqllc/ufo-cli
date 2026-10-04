@@ -677,6 +677,9 @@ def structure_summary(family: str, document: dict) -> dict:
         }
         editable = [f"{plural(len(plain), 'plain paragraph')} on this page can be rewritten, "
                     "commented or used as an insert anchor"]
+        if "stories" in document:
+            counts["addressableStories"] = len(document["stories"])
+            counts["storyInventory"] = "complete" if document.get("storiesComplete") is True else "partial"
         reasons: dict[str, int] = {}
         for row in rows:
             if row.get("limitation"):

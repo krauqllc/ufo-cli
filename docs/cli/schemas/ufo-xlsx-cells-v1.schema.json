@@ -93,6 +93,11 @@
               null
             ]
           },
+          "storedDimension": {
+            "description": "Actual stored-cell extent, independent of the declared dimension; null for an empty or unreadable worksheet. Optional for older v1 reads.",
+            "type": ["string", "null"],
+            "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}:[A-Z]{1,3}[1-9][0-9]{0,6}$"
+          },
           "charts": {
             "type": "array",
             "maxItems": 50,
@@ -261,8 +266,22 @@
                   "shared_formula_dependent",
                   "array_formula",
                   "shared_string_missing",
-                  "value_length_limit"
+                  "value_length_limit",
+                  "boolean_value_invalid"
                 ]
+              },
+              "valueLimitation": {
+                "description": "Why a stored value or formula cache cannot be read, independent of formula edit restrictions. Optional for older v1 reads.",
+                "enum": [null, "shared_string_missing", "value_length_limit", "boolean_value_invalid"]
+              },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether this cell is a supported guarded write target. Source hash, preimage, value and whole-package gates still apply. Older v1 cells may omit this assessment."
+              },
+              "editRefusal": {
+                "type": ["string", "null"],
+                "minLength": 1,
+                "description": "Static target restriction, or null when none was found; paired with editable when present."
               }
             },
             "allOf": [
@@ -307,6 +326,25 @@
                     }
                   }
                 }
+              },
+              {
+                "if": { "required": ["editable"] },
+                "then": {
+                  "required": ["editRefusal"],
+                  "if": { "properties": { "editable": { "const": true } } },
+                  "then": {
+                    "properties": {
+                      "editRefusal": { "type": "null" },
+                      "limitation": { "type": "null" },
+                      "type": { "enum": ["empty", "string", "number", "boolean", "formula"] }
+                    }
+                  },
+                  "else": { "properties": { "editRefusal": { "type": "string" } } }
+                }
+              },
+              {
+                "if": { "required": ["editRefusal"] },
+                "then": { "required": ["editable"] }
               }
             ]
           }

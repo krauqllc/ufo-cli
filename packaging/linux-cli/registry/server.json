@@ -3,7 +3,7 @@
   "name": "io.github.krauqllc/ufo-cli",
   "title": "Universal File Opener CLI",
   "description": "Inspect files, extract content and make guarded edits locally. Linux x86_64, glibc 2.35+.",
-  "version": "1.5.1-1",
+  "version": "1.5.2-1",
   "websiteUrl": "https://universalfileopener.com/cli/",
   "repository": {
     "url": "https://github.com/krauqllc/ufo-cli",
@@ -12,9 +12,9 @@
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/krauqllc/ufo-cli/releases/download/v1.5.1/ufo-cli-1.5.1-linux-x64.mcpb",
-      "version": "1.5.1",
-      "fileSha256": "a7103d76e163800074bddb245d2f01b3b9c7b274a3a2b0f690cbddcf2c7acedb",
+      "identifier": "https://github.com/krauqllc/ufo-cli/releases/download/v1.5.2/ufo-cli-1.5.2-linux-x64.mcpb",
+      "version": "1.5.2",
+      "fileSha256": "60471a107ff877277cfd511566bbfd89b7f04254263e4cf48afb486ea1d23903",
       "transport": {
         "type": "stdio"
       }
@@ -51,8 +51,8 @@
         ],
         "glibcMinVersion": "2.35",
         "allowedRoots": "The bundle requires existing absolute task directories selected by the user. No directories are granted by default.",
-        "engineVersion": "1.5.1",
-        "registryRevision": "Metadata release 1.5.1-1 offers the accepted MCPB route. Its engine and bundle remain 1.5.1; a later stable registry release can add npm."
+        "engineVersion": "1.5.2",
+        "registryRevision": "Metadata release 1.5.2-1 offers the accepted MCPB route. Its engine and bundle remain 1.5.2; a later stable registry release can add npm."
       }
     }
   }

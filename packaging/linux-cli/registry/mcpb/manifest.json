@@ -2,9 +2,9 @@
   "manifest_version": "0.3",
   "name": "ufo-cli",
   "display_name": "Universal File Opener CLI",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Inspect unfamiliar files, extract content and make guarded edits locally.",
-  "long_description": "Local stdio MCP server for Linux x86_64 with glibc 2.35 or later. Alpine/musl is unsupported. Includes the unchanged, signed UFO CLI 1.5.1 runtime. Select only the directories the job needs; no directory is allowed by default. Supports file inspection, extraction, search and targeted changes with reviewable receipts and new output copies. Deeper reading, screening and editing vary by format. Document processing uses no network and collects no telemetry. Install a separate signed organization license when the CLI offer requires one.",
+  "long_description": "Local stdio MCP server for Linux x86_64 with glibc 2.35 or later. Alpine/musl is unsupported. Includes the unchanged, signed UFO CLI 1.5.2 runtime. Select only the directories the job needs; no directory is allowed by default. Supports file inspection, extraction, search and targeted changes with reviewable receipts and new output copies. Deeper reading, screening and editing vary by format. Document processing uses no network and collects no telemetry. Install a separate signed organization license when the CLI offer requires one.",
   "author": {
     "name": "Krauq LLC",
     "email": "support@krauq.com",
@@ -17,7 +17,7 @@
   "homepage": "https://universalfileopener.com/cli/",
   "documentation": "https://universalfileopener.com/cli/reference/",
   "support": "https://universalfileopener.com/support/",
-  "license": "SEE LICENSE IN vendor/universal-file-opener-1.5.1-linux-x64/ENGINE-LICENSE.txt",
+  "license": "SEE LICENSE IN vendor/universal-file-opener-1.5.2-linux-x64/ENGINE-LICENSE.txt",
   "server": {
     "type": "node",
     "entry_point": "server/index.js",
@@ -111,7 +111,7 @@
   "_meta": {
     "com.krauq": {
       "platform": "linux-x64",
-      "releaseUrl": "https://github.com/krauqllc/ufo-cli/releases/tag/v1.5.1",
+      "releaseUrl": "https://github.com/krauqllc/ufo-cli/releases/tag/v1.5.2",
       "distributionState": "prepared, not submitted",
       "glibcMinVersion": "2.35"
     }

@@ -1,4 +1,4 @@
-# Pinned to the published, signed CLI 1.5.1 release. The URL, size and
+# Pinned to the published, signed CLI 1.5.2 release. The URL, size and
 # digest were verified against GitHub and the owner's signed SHA256SUMS.
 #
 # This belongs in a Krauq-maintained tap (for example, krauqllc/homebrew-tap,
@@ -14,7 +14,7 @@
 class Ufo < Formula
   desc "Inspect files, extract content, and make guarded edits locally"
   homepage "https://universalfileopener.com/cli/"
-  version "1.5.1"
+  version "1.5.2"
   # The shipped binaries are not under an SPDX-expressible license. The command
   # layer source is Apache-2.0; the distributed executable is not.
   license :cannot_represent
@@ -24,8 +24,8 @@ class Ufo < Formula
 
   on_linux do
     on_intel do
-      url "https://github.com/krauqllc/ufo-cli/releases/download/v1.5.1/universal-file-opener-1.5.1-linux-x64.tar.gz"
-      sha256 "9e575da7209cbbd8594fc3624b2cb5593e9df5a22ad8b7912dec039cb1524952"
+      url "https://github.com/krauqllc/ufo-cli/releases/download/v1.5.2/universal-file-opener-1.5.2-linux-x64.tar.gz"
+      sha256 "60f56e71fd00b21a48b160eaee85c082811f8e256d16474d916d3af05ec8fd1b"
     end
   end
 
