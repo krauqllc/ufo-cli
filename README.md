@@ -1,14 +1,34 @@
 # UFO CLI
 
-**Your agent. Any file.** UFO gives accessible regular files useful basic
-information, including unfamiliar formats. Dedicated readers go deeper on
-supported documents, images, archives, media and text/data. Screen supported
-files for hidden content and privacy risks, then make targeted changes in new,
-reviewable copies. One offline CLI and local MCP server, with JSON receipts.
+**One local tool for every file an AI agent touches.** Find what is hidden or
+risky in incoming files, including text written to instruct an AI, read them,
+change them without breaking them, and hand back clean copies. One offline CLI
+and local MCP server for Linux, with a JSON receipt for every step.
+
+- **Find.** `ufo inspect --deep` reports comments, tracked changes, hidden
+  text, hidden sheets, rows and slides, speaker notes, document properties,
+  macros and embedded files in supported formats. Its text scan flags lines
+  that read as instructions to an AI assistant, personal-data and credential
+  patterns and look-alike mixed-script words, and it names a program
+  travelling under a document's name. `ufo inspect --human` prints the same
+  findings readably.
+- **Read.** `ufo text` extracts content with provenance, and
+  `--format structure` adds addresses and hashes. `ufo capabilities --file`
+  tells an agent what one file allows: bounded reads, candidate edits and
+  their exact help, or why it should stop.
+- **Change.** Guarded edits to Word, Excel, PowerPoint, PDF, JSON, CSV and
+  text files check the source hash and the expected content, write a new copy
+  and never overwrite. Untouched package parts and unaddressed values keep
+  their exact bytes, and `ufo text --format structure --targets` derives
+  exact guard templates for the change you choose.
+- **Hand back.** `ufo clean` writes a copy without the removable hidden
+  content the inspection found, and its receipt lists what was removed and
+  what was not.
 
 Inspection reports its coverage gaps. Basic information for an unknown file
-does not imply a dedicated reader, editor or security inspector for its format.
-File and resource limits apply.
+does not imply a dedicated reader, editor or security inspector for its format,
+and findings are advisory: UFO is not antivirus or a guarantee that content is
+safe. File and resource limits apply.
 
 **Free for individuals and small teams.** Every command and supported file type
 is included, with no signup or watermark. Organizations with fewer than ten
@@ -33,8 +53,8 @@ ufo skill install --agent claude-code --dir "$PWD"
 [`install.sh`](https://github.com/krauqllc/ufo-cli/blob/main/install.sh) downloads the app image from the latest
 [release](https://github.com/krauqllc/ufo-cli/releases), checks it against the
 release's `SHA256SUMS` and installs it under `~/.local`, without sudo. The same
-release has a Debian package (`sudo apt install ./universal-file-opener_1.5.2_amd64.deb`)
-and `ufo-cli-1.5.2-docker.tar`, an archive of the container image for offline transfer.
+release has a Debian package (`sudo apt install ./universal-file-opener_1.6.0_amd64.deb`)
+and `ufo-cli-1.6.0-docker.tar`, an archive of the container image for offline transfer.
 
 ### Container
 
@@ -46,14 +66,14 @@ docker run --rm --network none --read-only --cap-drop ALL \
   --pids-limit 128 --cpus 2 --memory 1g \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
   --mount type=bind,src="$PWD",dst=/input,readonly \
-  ghcr.io/krauqllc/ufo-cli:1.5.2 text /input/report.docx
+  ghcr.io/krauqllc/ufo-cli:1.6.0 text /input/report.docx
 ```
 
 No GitHub login is needed. The temporary mount is required. For edits, mount a
 separate writable output folder at `/output` and select a new file there. The
 container reads, edits and recognizes text; page rendering and Office-to-PDF
 conversion need the application package. For a deployment pinned to an immutable
-image, use the digest in the [release notes](https://github.com/krauqllc/ufo-cli/releases/tag/v1.5.2).
+image, use the digest in the [release notes](https://github.com/krauqllc/ufo-cli/releases/tag/v1.6.0).
 
 ### Connect an agent
 
@@ -74,7 +94,7 @@ From a clone of this repository, with Python 3.10+ and `jsonschema` installed:
 
 ```sh
 python3 tools/cli/first_run_demo.py --ufo "$(command -v ufo)" \
-  --expect-version 1.5.2 --output first-look --mcp
+  --expect-version 1.6.0 --output first-look --mcp
 ```
 
 The short example generates two fictional inputs. It collects basic information
@@ -116,10 +136,11 @@ the next edit. Store full receipts when you need an audit record.
 `convert` and `unpack` do not accept it. For MCP, read `tools/list` schemas:
 `find` takes one file and `report` requires an output path.
 
-Only operations that declare `--expect-sha256` accept revision guards.
-`replace-text`, PDF page edits, image transforms and archive edits do not.
-Check each operation's help rather than copying another operation's flags.
-Always review what a receipt skipped and inspect the output before handoff.
+Every edit operation accepts `--expect-sha256` (MCP `options.expectedSha256`), so a
+stale source refuses instead of being edited. Check each operation's help for
+its other flags rather than copying another operation's. For an unfamiliar
+file, start with `ufo capabilities --file FILE`. Always review what a receipt
+skipped and inspect the output before handoff.
 
 ## What is in this repository
 
@@ -145,12 +166,14 @@ descriptors target the same Linux x86_64 release. The
 [Homebrew tap](https://github.com/krauqllc/homebrew-ufo) is public:
 `brew install krauqllc/ufo/ufo`. The release also provides a complete local
 MCPB bundle for compatible Linux clients, listed in the
-[official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.krauqllc%2Fufo-cli/versions/1.5.2-1).
-Directory revision `1.5.2-1` provides the matching `1.5.2` engine and bundle.
+[official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.krauqllc%2Fufo-cli/versions/1.6.0-1).
+Directory revision `1.6.0-1` provides the matching `1.6.0` engine and bundle.
 Choose only existing task folders when installing the bundle; no directories
-are granted by default. The npm package is public as
-[`@krauq/ufo-cli`](https://www.npmjs.com/package/@krauq/ufo-cli). On npm 12 use
-`npm install --global @krauq/ufo-cli@1.5.2 --allow-scripts=@krauq/ufo-cli`;
+are granted by default. The npm package
+[`@krauq/ufo-cli`](https://www.npmjs.com/package/@krauq/ufo-cli) installs the
+same verified runtime; version `1.6.0` appears there once the publisher
+approves it with 2FA, which `npm view @krauq/ufo-cli versions` shows. On npm 12 use
+`npm install --global @krauq/ufo-cli@1.6.0 --allow-scripts=@krauq/ufo-cli`;
 on npm 11 or earlier, omit `--allow-scripts` and keep installation scripts enabled.
 The wrapper verifies and installs this exact Linux runtime. Smithery and Glama
 account submissions are separate pending steps.
@@ -159,8 +182,8 @@ account submissions are separate pending steps.
 
 ```sh
 UFO=$(command -v ufo)
-python3 tools/cli/evaluate_sample.py --ufo "$UFO" --expect-version 1.5.2 --output sample-result
-python3 tools/cli/own_file_evaluation.py --files ~/my-files --ufo "$UFO" --expect-version 1.5.2 --output my-files-report
+python3 tools/cli/evaluate_sample.py --ufo "$UFO" --expect-version 1.6.0 --output sample-result
+python3 tools/cli/own_file_evaluation.py --files ~/my-files --ufo "$UFO" --expect-version 1.6.0 --output my-files-report
 python3 tools/corpus/download_realworld_corpus.py --download --output corpus
 python3 tools/corpus/compare_agent_tools.py --download --corpus tools/corpus/realworld_corpus_manifest.tsv --corpus-root corpus --ufo "$UFO"
 ```

@@ -13,7 +13,7 @@ function command (directory, roots, platform = process.platform, arch = process.
   for (const root of roots) {
     if (!path.isAbsolute(root) || !fs.statSync(root).isDirectory()) throw new Error('every allowed root must be an existing absolute directory.')
   }
-  return { binary: path.join(directory, 'vendor/universal-file-opener-1.5.2-linux-x64/bin/ufo'), args: ['mcp', ...roots.flatMap(root => ['--allow-root', root])] }
+  return { binary: path.join(directory, 'vendor/universal-file-opener-1.6.0-linux-x64/bin/ufo'), args: ['mcp', ...roots.flatMap(root => ['--allow-root', root])] }
 }
 
 if (require.main === module) {

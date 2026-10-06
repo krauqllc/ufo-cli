@@ -1,21 +1,21 @@
 {
-  "version": "1.5.2",
+  "version": "1.6.0",
   "provenance": {
-    "releaseUrl": "https://github.com/krauqllc/ufo-cli/releases/tag/v1.5.2",
-    "releaseId": 403255027,
-    "sourceCommit": "af3021084836d6b42c8a92efab758e645f494186",
+    "releaseUrl": "https://github.com/krauqllc/ufo-cli/releases/tag/v1.6.0",
+    "releaseId": 404332646,
+    "sourceCommit": "01cd7abb9037872e0195a618c89830e755467ad2",
     "checksumSignatureNamespace": "ufo-cli-release-checksums-v1",
     "signerFingerprint": "SHA256:PaoFqFSErvcvmeZ+GAzWUSX/f2A3afw9RIvrs4wxt60",
-    "verifiedAt": "2026-10-04"
+    "verifiedAt": "2026-10-06"
   },
   "assets": {
     "linux-x64": {
-      "url": "https://github.com/krauqllc/ufo-cli/releases/download/v1.5.2/universal-file-opener-1.5.2-linux-x64.tar.gz",
-      "sha256": "60f56e71fd00b21a48b160eaee85c082811f8e256d16474d916d3af05ec8fd1b",
-      "sizeBytes": 205252019,
-      "launcher": "universal-file-opener-1.5.2-linux-x64/bin/ufo",
-      "launcherSha256": "0c6913ad8ca795cf68fb2843509d6db565b80a30119ef40083710dc1ea28d14b",
-      "treeSha256": "8fad7137aeba60ce072221179be63a686b2342326d84fdef60dfba854aa8008c",
+      "url": "https://github.com/krauqllc/ufo-cli/releases/download/v1.6.0/universal-file-opener-1.6.0-linux-x64.tar.gz",
+      "sha256": "50a70b90fd474a88f090dda1aafd3c59efe476b36f1d1d1e83b5703ad1584ca4",
+      "sizeBytes": 205145573,
+      "launcher": "universal-file-opener-1.6.0-linux-x64/bin/ufo",
+      "launcherSha256": "3cd0fa3a4227a1136787c07a4977339db0509ab35e69a58d9f672132c2e45b91",
+      "treeSha256": "c47082d3da59b2672e2e13c816acfcbb1dcf44e94b660ba5a9f8a5c3de0b81cd",
       "fileCount": 467
     }
   }

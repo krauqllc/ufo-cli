@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-file-capabilities-v1.schema.json",
+  "title": "UFO per-file discovery v1",
+  "description": "Source-bound inspection and conservative candidate guidance from capabilities --file or MCP capabilities with path. Guidance is not operation acceptance. Existing guards and refusals still apply.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "inspection", "staging", "reads", "candidateEdits", "notes"],
+  "properties": {
+    "schema": {"const": "com.krauq.ufo.file-capabilities"},
+    "schemaVersion": {"const": 1},
+    "inspection": {"$ref": "ufo-inspection-report-v1.schema.json"},
+    "staging": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["extension", "expectSha256", "sourceModification", "outputReplacement"],
+          "properties": {
+            "extension": {"type": "string", "pattern": "^[a-z0-9]{1,16}$"},
+            "expectSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "sourceModification": {"const": "never"},
+            "outputReplacement": {"const": "never"}
+          }
+        }
+      ]
+    },
+    "reads": {
+      "type": "array", "maxItems": 4,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["purpose", "argv"],
+        "properties": {
+          "purpose": {"enum": ["text", "structure", "render-options", "convert-options"]},
+          "argv": {"$ref": "#/$defs/argv"}
+        }
+      }
+    },
+    "candidateEdits": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["operation", "helpArgv"],
+        "properties": {
+          "operation": {"type": "string", "minLength": 1},
+          "helpArgv": {"$ref": "#/$defs/argv"}
+        }
+      }
+    },
+    "notes": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "inspection": {
+            "anyOf": [
+              {"properties": {"status": {"not": {"const": "completed"}}}},
+              {"properties": {"source": {"properties": {"stableDuringProcessing": {"not": {"const": true}}}}}},
+              {"properties": {"flags": {"contains": {"enum": ["encrypted", "has_executable", "header_mismatch"]}}}},
+              {"properties": {"warnings": {"contains": {"enum": ["executable_content", "truncated_or_damaged"]}}}},
+              {"properties": {
+                "detection": {"type": "object", "properties": {"resolvedKind": {"const": "pdf"}}},
+                "metadata": {"not": {"required": ["pages"], "properties": {"pages": {"pattern": "^[1-9][0-9]*$"}}}}
+              }}
+            ]
+          }
+        }
+      },
+      "then": {"properties": {"reads": {"maxItems": 0}, "candidateEdits": {"maxItems": 0}, "staging": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"staging": {"type": "object"}}},
+      "then": {"properties": {"reads": {"maxItems": 0}, "candidateEdits": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"inspection": {"properties": {"notInspected": {"minItems": 1}}}}},
+      "then": {"properties": {"candidateEdits": {"maxItems": 0}}}
+    }
+  ],
+  "$defs": {
+    "argv": {"type": "array", "minItems": 2, "maxItems": 8, "items": {"type": "string"}}
+  }
+}

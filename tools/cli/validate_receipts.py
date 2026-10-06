@@ -15,9 +15,11 @@ receipts a pipeline stores.
 
 from __future__ import annotations
 
+import inspect
 import json
 from pathlib import Path
 import sys
+from urllib.parse import urldefrag, urljoin
 
 try:
     import jsonschema
@@ -57,6 +59,8 @@ BY_CONTRACT = {
     ("com.krauq.ufo.convert-receipt", 1): "ufo-convert-receipt-v1.schema.json",
     ("com.krauq.ufo.unpack-receipt", 1): "ufo-unpack-receipt-v1.schema.json",
     ("com.krauq.ufo.capabilities", 1): "ufo-capabilities-v1.schema.json",
+    ("com.krauq.ufo.file-capabilities", 1): "ufo-file-capabilities-v1.schema.json",
+    ("com.krauq.ufo.edit-targets", 1): "ufo-edit-targets-v1.schema.json",
     ("com.krauq.ufo.license-status", 1): "ufo-license-status-v1.schema.json",
     ("com.krauq.ufo.license-refusal", 1): "ufo-license-refusal-v1.schema.json",
     ("com.krauq.ufo.doctor-report", 1): "ufo-doctor-report-v1.schema.json",
@@ -81,6 +85,58 @@ def parse_json(text: str):
     return json.loads(text, object_pairs_hook=unique_object)
 
 
+def _offline_validator(schema: dict, resources: list[dict]) -> jsonschema.Draft202012Validator:
+    """Resolve embedded contracts only from the bundled schema catalogue."""
+    local_ids = {resource["$id"] for resource in resources} | {schema["$id"]}
+
+    def check_references(value, base):
+        if isinstance(value, dict):
+            if isinstance(value.get("$id"), str):
+                base = urljoin(base, value["$id"])
+            for keyword in ("$ref", "$dynamicRef"):
+                if isinstance(value.get(keyword), str):
+                    uri = urljoin(base, value[keyword])
+                    if urldefrag(uri)[0] not in local_ids:
+                        raise ValueError("External schema resolution is disabled: " + uri)
+            for child in value.values():
+                check_references(child, base)
+        elif isinstance(value, list):
+            for child in value:
+                check_references(child, base)
+
+    # Both validator APIs preload standard metaschemas; references must still
+    # be limited to our explicit catalogue, rather than any implicit resources.
+    for resource in [schema, *resources]:
+        check_references(resource, resource["$id"])
+
+    if "registry" in inspect.signature(jsonschema.Draft202012Validator).parameters:
+        from referencing import Registry, Resource
+        from referencing.exceptions import NoSuchResource
+
+        def deny_retrieval(uri: str):
+            raise NoSuchResource(ref=uri)
+
+        registry = Registry(retrieve=deny_retrieval).with_resources(
+            (resource["$id"], Resource.from_contents(resource)) for resource in resources
+        )
+        return jsonschema.Draft202012Validator(schema, registry=registry)
+
+    # Debian/Ubuntu's jsonschema 4.10 predates Registry and referencing. Keep
+    # their checkout-free bootstrap supported without adding network lookup.
+    class LocalResolver(jsonschema.RefResolver):
+        def resolve(self, ref):
+            uri = urljoin(self.resolution_scope, ref)
+            if urldefrag(uri)[0] not in local_ids:
+                raise ValueError("External schema resolution is disabled: " + uri)
+            return super().resolve(ref)
+
+        def resolve_remote(self, uri):
+            raise ValueError("External schema resolution is disabled: " + uri)
+
+    resolver = LocalResolver.from_schema(schema, store={resource["$id"]: resource for resource in resources})
+    return jsonschema.Draft202012Validator(schema, resolver=resolver)
+
+
 def validator_for(schema_name: str, schema_version: int) -> jsonschema.Draft202012Validator | None:
     contract = (schema_name, schema_version)
     file_name = BY_CONTRACT.get(contract)
@@ -89,6 +145,12 @@ def validator_for(schema_name: str, schema_version: int) -> jsonschema.Draft2020
     if contract not in _validators:
         schema = json.loads((SCHEMAS / file_name).read_text(encoding="utf-8"))
         jsonschema.Draft202012Validator.check_schema(schema)
+        # Discovery embeds existing contracts. Resolve their references locally,
+        # never by fetching public $id locations over the network.
+        if contract in {("com.krauq.ufo.file-capabilities", 1), ("com.krauq.ufo.edit-targets", 1)}:
+            resources = [json.loads((SCHEMAS / name).read_text(encoding="utf-8")) for name in set(BY_CONTRACT.values())]
+            _validators[contract] = _offline_validator(schema, resources)
+            return _validators[contract]
         _validators[contract] = jsonschema.Draft202012Validator(schema)
     return _validators[contract]
 

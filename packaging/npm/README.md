@@ -1,23 +1,24 @@
 # UFO CLI
 
-Useful information for any accessible regular file. Deeper readers screen
-supported formats for hidden content and privacy risks, extract content, and
-make targeted changes in new copies. UFO runs locally as a CLI or stdio MCP
-server. Reports state what was inspected and what remains unknown.
+One local tool for every file an AI agent touches. Find what is hidden or
+risky in incoming files, including text written to instruct an AI, read them,
+change them without breaking them, and hand back clean copies. UFO runs
+locally as a CLI or stdio MCP server. Reports state what was inspected and
+what remains unknown; findings are advisory, not an antivirus verdict.
 
-This package installs the exact UFO 1.5.2 runtime. Direct
-[Linux downloads](https://github.com/krauqllc/ufo-cli/releases/tag/v1.5.2)
+This package installs the exact UFO 1.6.0 runtime. Direct
+[Linux downloads](https://github.com/krauqllc/ufo-cli/releases/tag/v1.6.0)
 are also available. Install and check your first file:
 
 ```sh
-npm install --global @krauq/ufo-cli@1.5.2 --allow-scripts=@krauq/ufo-cli
+npm install --global @krauq/ufo-cli@1.6.0 --allow-scripts=@krauq/ufo-cli
 ufo --version
 ufo doctor
 ufo inspect --json ./your-file
 ```
 
 On npm 12, the explicit script approval lets UFO's installer run. With npm 11
-or earlier, use `npm install --global @krauq/ufo-cli@1.5.2` with install scripts
+or earlier, use `npm install --global @krauq/ufo-cli@1.6.0` with install scripts
 enabled; omit `--allow-scripts`.
 
 Linux x86_64, glibc 2.35+, Node.js 18.17+ and GNU tar are required. Ubuntu
@@ -100,7 +101,7 @@ Use `npm uninstall --global @krauq/ufo-cli` to remove the wrapper and downloaded
 runtime. It leaves your documents and per-user license in place. The optional
 `ufo license remove` command removes that license separately.
 
-To reuse an existing matching 1.5.2 installation, set
+To reuse an existing matching 1.6.0 installation, set
 `UFO_CLI_SKIP_DOWNLOAD=1` and `UFO_CLI_BINARY` to its absolute `bin/ufo` path
 during installation. The resolved path is saved and reused on later launches
 and rebuilds. The wrapper rejects another version and its own launcher.

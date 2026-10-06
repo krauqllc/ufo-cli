@@ -1,0 +1,424 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-edit-targets-v1.schema.json",
+  "title": "UFO selected-read edit targets v1",
+  "description": "Full accepted structure read plus bounded source-bound guard templates. Caller supplies the requested replacement and new output. Targets describe only the selected read; edits still enforce every refusal.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "read",
+    "supported",
+    "coverage",
+    "targets",
+    "readOnlyRows",
+    "omittedTargets",
+    "notes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.edit-targets"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "read": {
+      "oneOf": [
+        {
+          "$ref": "ufo-docx-paragraphs-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-json-fields-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-delimited-fields-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-text-lines-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-xlsx-cells-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-pptx-slides-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-pdf-pages-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-recognized-pages-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-pdf-forms-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-pdf-outline-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-epub-chapters-v1.schema.json"
+        }
+      ]
+    },
+    "supported": {
+      "type": "boolean"
+    },
+    "coverage": {
+      "const": "selected-read-only"
+    },
+    "targets": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation",
+              "options",
+              "needs",
+              "helpArgv"
+            ],
+            "properties": {
+              "operation": {
+                "const": "paragraphs"
+              },
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "expectedSha256",
+                  "changes"
+                ],
+                "properties": {
+                  "expectedSha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "story": {
+                    "type": "string"
+                  },
+                  "slide": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "changes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "index",
+                        "expected"
+                      ],
+                      "properties": {
+                        "index": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "expected": {
+                          "type": "string"
+                        },
+                        "notes": {
+                          "const": true
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "needs": {
+                "const": "changes[0].replacement"
+              },
+              "helpArgv": {
+                "const": [
+                  "ufo",
+                  "edit",
+                  "paragraphs",
+                  "--help"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation",
+              "options",
+              "needs",
+              "helpArgv"
+            ],
+            "properties": {
+              "operation": {
+                "const": "lines"
+              },
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "expectedSha256",
+                  "set"
+                ],
+                "properties": {
+                  "expectedSha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "set": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "line",
+                        "expected"
+                      ],
+                      "properties": {
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "expected": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "needs": {
+                "const": "set[0].value"
+              },
+              "helpArgv": {
+                "const": [
+                  "ufo",
+                  "edit",
+                  "lines",
+                  "--help"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation",
+              "options",
+              "needs",
+              "helpArgv"
+            ],
+            "properties": {
+              "operation": {
+                "const": "fields"
+              },
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "expectedSha256",
+                  "set"
+                ],
+                "properties": {
+                  "expectedSha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "set": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "target",
+                        "expected"
+                      ],
+                      "properties": {
+                        "target": {
+                          "type": "string"
+                        },
+                        "expected": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "type",
+                            "value"
+                          ],
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "empty",
+                                "string",
+                                "number",
+                                "boolean",
+                                "null",
+                                "formula"
+                              ]
+                            },
+                            "value": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "bareQuotes": {
+                    "enum": [
+                      "refuse",
+                      "literal"
+                    ]
+                  }
+                }
+              },
+              "needs": {
+                "const": "set[0].value"
+              },
+              "helpArgv": {
+                "const": [
+                  "ufo",
+                  "edit",
+                  "fields",
+                  "--help"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation",
+              "options",
+              "needs",
+              "helpArgv"
+            ],
+            "properties": {
+              "operation": {
+                "const": "cells"
+              },
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "expectedSha256",
+                  "set"
+                ],
+                "properties": {
+                  "expectedSha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "set": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sheet",
+                        "cell",
+                        "expected"
+                      ],
+                      "properties": {
+                        "sheet": {
+                          "type": "string"
+                        },
+                        "cell": {
+                          "type": "string"
+                        },
+                        "expected": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "type",
+                            "value"
+                          ],
+                          "properties": {
+                            "type": {
+                              "enum": [
+                                "empty",
+                                "string",
+                                "number",
+                                "boolean",
+                                "null",
+                                "formula"
+                              ]
+                            },
+                            "value": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "needs": {
+                "const": "set[0].value"
+              },
+              "helpArgv": {
+                "const": [
+                  "ufo",
+                  "edit",
+                  "cells",
+                  "--help"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "readOnlyRows": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "omittedTargets": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "notes": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "supported": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "targets": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}

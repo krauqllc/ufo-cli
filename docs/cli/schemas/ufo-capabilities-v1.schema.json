@@ -43,6 +43,16 @@
             "maxValueChars": { "type": "integer", "minimum": 1 }
           }
         },
+        "editTargetDiscovery": {
+          "description": "Optional in older v1 runtimes. Derived guards from full accepted structured reads; replacements and outputs belong to the caller.",
+          "type": "object", "additionalProperties": false,
+          "required": ["schema", "schemaVersion", "cliOption", "mcpArgument", "maxTargets", "maxGuardBytes", "coverage"],
+          "properties": {
+            "schema": {"const": "com.krauq.ufo.edit-targets"}, "schemaVersion": {"const": 1},
+            "cliOption": {"const": "--targets"}, "mcpArgument": {"const": "targets"},
+            "maxTargets": {"const": 2000}, "maxGuardBytes": {"const": 1048576}, "coverage": {"const": "selected-read-only"}
+          }
+        },
         "jsonFieldReads": {
           "type": "object", "additionalProperties": false,
           "required": ["schema", "schemaVersion", "selector", "maxSourceBytes", "maxDepth", "maxTokens", "maxPointerChars", "maxValueChars", "maxPageSize"],
