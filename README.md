@@ -163,8 +163,10 @@ The other files under `tools/` are the helpers these import. They need Python
 Reviewed distribution source is also available under `packaging/npm/`,
 `packaging/linux-cli/registry/` and `packaging/homebrew/`. These wrappers and
 descriptors target the same Linux x86_64 release. The
-[Homebrew tap](https://github.com/krauqllc/homebrew-ufo) is public:
-`brew install krauqllc/ufo/ufo`. The release also provides a complete local
+[Homebrew tap](https://github.com/krauqllc/homebrew-ufo) is public. Homebrew 7
+loads formulae from other taps only after you trust them:
+`brew trust --formula krauqllc/ufo/ufo`, then `brew install krauqllc/ufo/ufo`.
+The release also provides a complete local
 MCPB bundle for compatible Linux clients, listed in the
 [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.krauqllc%2Fufo-cli/versions/1.6.0-1).
 Directory revision `1.6.0-1` provides the matching `1.6.0` engine and bundle.

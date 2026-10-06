@@ -19,15 +19,15 @@ class Ufo < Formula
   # layer source is Apache-2.0; the distributed executable is not.
   license :cannot_represent
 
+  # The URL sits at the top level so `brew tap` can load the formula on every
+  # platform it validates. Installation stays limited to Linux x86_64 by the
+  # two requirements below; a Linux-only url block made the tap refuse to load
+  # ("formula requires at least a URL") under Homebrew 7.
+  url "https://github.com/krauqllc/ufo-cli/releases/download/v1.6.0/universal-file-opener-1.6.0-linux-x64.tar.gz"
+  sha256 "50a70b90fd474a88f090dda1aafd3c59efe476b36f1d1d1e83b5703ad1584ca4"
+
   depends_on :linux
   depends_on arch: :x86_64
-
-  on_linux do
-    on_intel do
-      url "https://github.com/krauqllc/ufo-cli/releases/download/v1.6.0/universal-file-opener-1.6.0-linux-x64.tar.gz"
-      sha256 "50a70b90fd474a88f090dda1aafd3c59efe476b36f1d1d1e83b5703ad1584ca4"
-    end
-  end
 
   def install
     # The artifact is an unpacked application directory with an embedded Java
