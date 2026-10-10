@@ -207,6 +207,35 @@
         "type": "string"
       }
     },
+    "metadataTruncated": {
+      "description": "The whole of each `metadata` value that the 400-character display cut, keyed like `metadata`, so a caller can page a long value. Empty when nothing was cut. Absent from reports made before the field existed.",
+      "type": "object",
+      "maxProperties": 128,
+      "propertyNames": {
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "chars", "complete"],
+        "properties": {
+          "value": {
+            "description": "The value as read, cut only by the 65,536-character per-value ceiling and the 262,144-character per-report ceiling. The `metadata` entry is its first 400 characters.",
+            "type": "string",
+            "minLength": 401
+          },
+          "chars": {
+            "description": "Characters in the value as read; more than `value` holds only when the per-report ceiling cut it.",
+            "type": "integer",
+            "minimum": 401
+          },
+          "complete": {
+            "description": "True when `value` is the whole value the file stores.",
+            "type": "boolean"
+          }
+        }
+      }
+    },
     "flags": {
       "type": "array",
       "uniqueItems": true,
@@ -316,6 +345,14 @@
               "boolean",
               "null"
             ]
+          },
+          "flag": {
+            "description": "The report flag the shared inspection catalog says this code raises, or null when the code raises none. Every non-null value is also in the report's `flags`. Absent from reports made before the field existed.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
           }
         }
       }

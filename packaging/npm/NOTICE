@@ -24,11 +24,12 @@ What this NOTICE does not cover
 -------------------------------
 
 office-core, viewer-core, office-compose, office-compose-android,
-desktop-app, app, ios-app and baselineprofile are NOT under the Apache
-License. No open source grant of any kind applies to them. Neither does the
-Apache License apply to any distributed UFO binary: the Linux app image, the
-Debian package and the restricted OCI container image embed office-core and
-viewer-core and are distributed under the separate business use license in
+desktop-app, app, ios-app, baselineprofile and web-engine are NOT under the
+Apache License. No open source grant of any kind applies to them. Neither does
+the Apache License apply to any distributed UFO binary: the Linux app image,
+the Debian package, the restricted OCI container image and the browser engine
+module (web-engine, ufo-engine.wasm) embed office-core and viewer-core and are
+distributed under the separate business use license in
 packaging/linux-cli/ENGINE-LICENSE.txt.
 
 A redistribution of the Apache licensed sources must keep this NOTICE and must
@@ -46,6 +47,11 @@ decisions are under packaging/linux-cli/, including
 app-special-license-review.tsv, debian-license-review.tsv,
 jar-legal-evidence-review.tsv, debian-source.lock.tsv,
 temurin-source.lock.tsv and vendored-asset-source.lock.tsv.
+
+The browser engine module ships web-engine/legal/ENGINE-NOTICE.txt, its own
+notice for everything compiled into it (including TeaVM, Apache License 2.0,
+and the ThreeTen backport, BSD-3-Clause), with the component inventory
+web-engine/legal/component-inventory.tsv.
 
 Vendored asset notices live with the assets: viewer-core/src/main/resources/
 NOTICE.md records the modified Roboto derivatives and their exact byte

@@ -95,8 +95,13 @@ PROBE_WIRE_NAMES = {
 }
 
 
+# Fixtures the apps open but the Linux CLI refuses. The Android and Windows apps bundle
+# a HEIC decoder; the CLI does not, so its worker refuses the photo as 1.6.0 did.
+CLI_REFUSES = frozenset({"tika-heic-photo"})
+
+
 def expected_result(row: dict[str, str]) -> tuple[str, str]:
-    if row["expected_outcome"] == "refused":
+    if row["expected_outcome"] == "refused" or row["id"] in CLI_REFUSES:
         return "refused", "refused"
     if row["expected_probe"] == "DetectedOnly":
         return "limited", "detected_only"

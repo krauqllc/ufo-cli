@@ -44,6 +44,8 @@ of any kind:
                             archive and detection engine
   office-compose/           the shared document rendering and editing
   office-compose-android/   controllers
+  editor-chrome/            the shared editor ribbon for Windows and Android
+  editor-chrome-android/    tablets
   desktop-app/              the Windows and Linux desktop application
   app/                      the Android application
   ios-app/                  the parked iOS foundation

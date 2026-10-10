@@ -169,6 +169,34 @@
             "engine",
             "pages",
             "raster",
+            "dpi"
+          ],
+          "properties": {
+            "engine": {
+              "const": "worksheet-values-raster"
+            },
+            "pages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "raster": {
+              "const": true
+            },
+            "dpi": {
+              "type": "integer",
+              "minimum": 72,
+              "maximum": 300
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "pages",
+            "raster",
             "dpi",
             "note"
           ],
@@ -271,6 +299,168 @@
           }
         },
         {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "target",
+            "sourcePages",
+            "paragraphs",
+            "characters",
+            "rows",
+            "columns",
+            "cells",
+            "slides",
+            "scope"
+          ],
+          "properties": {
+            "engine": {
+              "const": "pdf-text-docx"
+            },
+            "target": {
+              "const": "docx"
+            },
+            "sourcePages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "paragraphs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20000
+            },
+            "characters": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2097152
+            },
+            "rows": {
+              "type": "null"
+            },
+            "columns": {
+              "type": "null"
+            },
+            "cells": {
+              "type": "null"
+            },
+            "slides": {
+              "type": "null"
+            },
+            "scope": {
+              "const": "visible_text_reflow"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "target",
+            "sourcePages",
+            "paragraphs",
+            "characters",
+            "rows",
+            "columns",
+            "cells",
+            "slides",
+            "scope"
+          ],
+          "properties": {
+            "engine": {
+              "const": "pdf-table-xlsx"
+            },
+            "target": {
+              "const": "xlsx"
+            },
+            "sourcePages": {
+              "const": 1
+            },
+            "paragraphs": {
+              "type": "null"
+            },
+            "characters": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2097152
+            },
+            "rows": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "columns": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 64
+            },
+            "cells": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "slides": {
+              "type": "null"
+            },
+            "scope": {
+              "const": "selected_table_literal_text"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "target",
+            "sourcePages",
+            "paragraphs",
+            "characters",
+            "rows",
+            "columns",
+            "cells",
+            "slides",
+            "scope"
+          ],
+          "properties": {
+            "engine": {
+              "const": "pdf-page-pptx"
+            },
+            "target": {
+              "const": "pptx"
+            },
+            "sourcePages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "paragraphs": {
+              "type": "null"
+            },
+            "characters": {
+              "type": "null"
+            },
+            "rows": {
+              "type": "null"
+            },
+            "columns": {
+              "type": "null"
+            },
+            "cells": {
+              "type": "null"
+            },
+            "slides": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "scope": {
+              "const": "page_pictures"
+            }
+          }
+        },
+        {
           "type": "null"
         }
       ]
@@ -288,44 +478,20 @@
       ]
     },
     "limits": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "maxSourceBytes",
-        "maxPages",
-        "maxOutputBytes",
-        "minDpi",
-        "maxDpi",
-        "workerTimeoutMillis",
-        "workerMaxHeapMiB"
-      ],
-      "properties": {
-        "maxSourceBytes": {
-          "const": 268435456
+      "oneOf": [
+        {
+          "$ref": "#/$defs/legacyLimits"
         },
-        "maxPages": {
-          "const": 500
+        {
+          "$ref": "#/$defs/pdfOfficeLimits"
         },
-        "maxOutputBytes": {
-          "const": 209715200
+        {
+          "$ref": "#/$defs/nativeCompleteLimits"
         },
-        "minDpi": {
-          "const": 72
-        },
-        "maxDpi": {
-          "const": 300
-        },
-        "workerTimeoutMillis": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 300000
-        },
-        "workerMaxHeapMiB": {
-          "type": "integer",
-          "minimum": 32,
-          "maximum": 2048
+        {
+          "$ref": "#/$defs/nativeChartLimits"
         }
-      }
+      ]
     },
     "durationMillis": {
       "type": "integer",
@@ -536,6 +702,555 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "const": "pdf-text-docx"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/pdfOfficeLimits"
+          },
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 25165824
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "path": {
+                "pattern": "\\.[dD][oO][cC][xX]$"
+              },
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 67108864
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "const": "pdf-table-xlsx"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/pdfOfficeLimits"
+          },
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 25165824
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "path": {
+                "pattern": "\\.[xX][lL][sS][xX]$"
+              },
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 67108864
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "const": "pdf-page-pptx"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/pdfOfficeLimits"
+          },
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 25165824
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "path": {
+                "pattern": "\\.[pP][pP][tT][xX]$"
+              },
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 67108864
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "enum": [
+                  "ebook-text-pdf",
+                  "text-epub",
+                  "text-mobi",
+                  "ebook-text-txt"
+                ]
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/legacyLimits"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "enum": [
+                  "compose-docx-raster",
+                  "compose-pptx-raster"
+                ]
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/legacyLimits"
+              },
+              {
+                "$ref": "#/$defs/nativeCompleteLimits"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "enum": [
+                  "compose-xlsx-raster"
+                ]
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/legacyLimits"
+              },
+              {
+                "$ref": "#/$defs/nativeChartLimits"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "enum": [
+                  "worksheet-values-raster"
+                ]
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/nativeCompleteLimits"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "limits": {
+            "properties": {
+              "maxSourceBytes": {
+                "const": 25165824
+              },
+              "maxPages": {
+                "const": 100
+              }
+            },
+            "required": [
+              "maxSourceBytes",
+              "maxPages"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "limits"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "maximum": 25165824
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 67108864
+              }
+            }
+          },
+          "result": {
+            "properties": {
+              "pages": {
+                "maximum": 100
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "limits": {
+            "properties": {
+              "maxSourceBytes": {
+                "const": 25165824
+              }
+            },
+            "required": [
+              "maxSourceBytes"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "limits"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "maximum": 25165824
+              }
+            }
+          }
+        }
+      }
     }
-  ]
+  ],
+  "$defs": {
+    "legacyLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxPages",
+        "maxOutputBytes",
+        "minDpi",
+        "maxDpi",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 268435456
+        },
+        "maxPages": {
+          "const": 500
+        },
+        "maxOutputBytes": {
+          "const": 209715200
+        },
+        "minDpi": {
+          "const": 72
+        },
+        "maxDpi": {
+          "const": 300
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "pdfOfficeLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxPages",
+        "maxOutputBytes",
+        "minDpi",
+        "maxDpi",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 25165824
+        },
+        "maxPages": {
+          "const": 100
+        },
+        "maxOutputBytes": {
+          "const": 67108864
+        },
+        "minDpi": {
+          "type": "null"
+        },
+        "maxDpi": {
+          "type": "null"
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "nativeCompleteLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxPages",
+        "maxOutputBytes",
+        "minDpi",
+        "maxDpi",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 25165824
+        },
+        "maxPages": {
+          "const": 100
+        },
+        "maxOutputBytes": {
+          "const": 67108864
+        },
+        "minDpi": {
+          "const": 72
+        },
+        "maxDpi": {
+          "const": 300
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "nativeChartLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxPages",
+        "maxOutputBytes",
+        "minDpi",
+        "maxDpi",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 25165824
+        },
+        "maxPages": {
+          "const": 500
+        },
+        "maxOutputBytes": {
+          "const": 209715200
+        },
+        "minDpi": {
+          "const": 72
+        },
+        "maxDpi": {
+          "const": 300
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    }
+  }
 }

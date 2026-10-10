@@ -58,6 +58,12 @@ SOURCE_KEYS = {
 FINDING_KEYS = {
     "category", "severity", "code", "title", "count", "detail", "where", "removable",
 }
+# Added after v1 shipped, so a report made before carries none of them: a finding's `flag` (the
+# catalog's flag for its code, null when it raises none, else one of the report's flags) and the
+# report's `metadataTruncated` (the whole of each metadata value the 400-character display cut).
+OPTIONAL_FINDING_KEYS = {"flag"}
+OPTIONAL_REPORT_KEYS = {"metadataTruncated"}
+METADATA_DISPLAY_CHARS = 400
 STABLE_FINDING_KEYS = {"category", "severity", "code", "count", "removable"}
 CONTAINER_KEYS = {
     "format", "entryCount", "entries", "entriesTruncated", "nestedArchives", "executables",
@@ -232,11 +238,25 @@ def raw_structure_problem(report: dict[str, Any], label: str) -> str | None:
         for key, value in metadata.items()
     ):
         return f"{label}: invalid metadata"
+    truncated = report.get("metadataTruncated", {})
+    if not isinstance(truncated, dict) or any(
+        not isinstance(row, dict)
+        or set(row) != {"value", "chars", "complete"}
+        or not isinstance(row["value"], str)
+        or len(row["value"]) <= METADATA_DISPLAY_CHARS
+        or not isinstance(metadata.get(key), str)
+        or not row["value"].startswith(metadata[key])
+        or not evaluate_cli_corpus.is_nonnegative_int(row["chars"])
+        or row["chars"] < len(row["value"])
+        or type(row["complete"]) is not bool
+        for key, row in truncated.items()
+    ):
+        return f"{label}: invalid metadataTruncated"
     findings = report.get("findings")
     if not isinstance(findings, list) or len(findings) > MAX_FINDINGS:
         return f"{label}: findings is not a list"
     for finding in findings:
-        if not isinstance(finding, dict) or set(finding) != FINDING_KEYS:
+        if not isinstance(finding, dict) or not FINDING_KEYS <= set(finding) <= FINDING_KEYS | OPTIONAL_FINDING_KEYS:
             return f"{label}: finding fields differ from inspection schema v1"
         if (
             not isinstance(finding.get("title"), str)
@@ -244,6 +264,9 @@ def raw_structure_problem(report: dict[str, Any], label: str) -> str | None:
             or (finding.get("where") is not None and not isinstance(finding["where"], str))
         ):
             return f"{label}: invalid finding display fields"
+        flag = finding.get("flag")
+        if flag is not None and (flag not in INSPECTION_FLAGS or flag not in report.get("flags", [])):
+            return f"{label}: finding flag is not one of the report's flags"
     not_inspected = report.get("notInspected")
     if not isinstance(not_inspected, list) or len(not_inspected) > MAX_NOT_INSPECTED or any(
         not isinstance(item, dict)
@@ -327,7 +350,7 @@ def validate_reports(
             problems.append(f"{label}: inspection report is missing")
             continue
         report = reports[sequence]
-        if not isinstance(report, dict) or set(report) != REPORT_KEYS:
+        if not isinstance(report, dict) or not REPORT_KEYS <= set(report) <= REPORT_KEYS | OPTIONAL_REPORT_KEYS:
             problems.append(f"{label}: report fields differ from inspection schema v1")
             continue
         constants = {

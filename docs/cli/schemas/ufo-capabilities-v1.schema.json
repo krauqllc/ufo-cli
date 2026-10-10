@@ -120,6 +120,28 @@
             "maxChapterBytes": {"const": 4194304}, "maxTextChars": {"const": 32768}, "maxTextOffset": {"const": 4194304}
           }
         },
+        "pdfToOffice": {
+          "type": "object", "additionalProperties": false,
+          "required": ["maxSourceBytes", "maxSelectedPages", "maxTextChars", "maxParagraphs", "maxCells", "maxColumns", "maxOutputBytes", "pptxRenderingAvailable"],
+          "properties": {
+            "maxSourceBytes": {"const": 25165824}, "maxSelectedPages": {"const": 100},
+            "maxTextChars": {"const": 2097152}, "maxParagraphs": {"const": 20000},
+            "maxCells": {"const": 100000}, "maxColumns": {"const": 64},
+            "maxOutputBytes": {"const": 67108864}, "pptxRenderingAvailable": {"type": "boolean"}
+          }
+        },
+        "officeToPdf": {
+          "type": "object", "additionalProperties": false,
+          "required": ["maxSourceBytes", "maxDocumentPages", "maxDocumentOutputBytes", "maxWorksheetCells", "maxWorksheetColumns", "maxWorksheetTextChars", "maxWorksheetPages", "maxWorksheetOutputBytes", "maxChartWorksheetPages", "maxChartWorksheetOutputBytes", "renderingAvailable"],
+          "properties": {
+            "maxSourceBytes": {"const": 25165824}, "maxDocumentPages": {"const": 100},
+            "maxDocumentOutputBytes": {"const": 67108864}, "maxWorksheetCells": {"const": 100000},
+            "maxWorksheetColumns": {"const": 64}, "maxWorksheetTextChars": {"const": 2097152},
+            "maxWorksheetPages": {"const": 100}, "maxWorksheetOutputBytes": {"const": 67108864},
+            "maxChartWorksheetPages": {"const": 500}, "maxChartWorksheetOutputBytes": {"const": 209715200},
+            "renderingAvailable": {"type": "boolean"}
+          }
+        },
         "bookText": {
           "description": "Stricter EPUB/Mobipocket text extraction bounds; incomplete declared EPUB reading order refuses.",
           "type": "object",

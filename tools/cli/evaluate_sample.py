@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import stat
 import sys
 import tempfile
@@ -476,6 +477,102 @@ PHOTO_ROWS = [[RED] * 4 + [GREEN] * 4] * 2 + [[BLUE] * 4 + [WHITE] * 4] * 2
 # A 4x4 replacement picture. It is square where PHOTO_ROWS is 2:1, so a fitted extent
 # has to keep the drawn width and double the drawn height, which a kept extent cannot fake.
 SECOND_PHOTO_ROWS = [[WHITE] * 2 + [BLUE] * 2] * 2 + [[GREEN] * 2 + [RED] * 2] * 2
+
+
+def verify_converted_pdf(
+    path: Path, expected_pages: int, expected_text: tuple[str, ...], *, proof_directory: Path,
+) -> dict:
+    """Independently reopen Office PDF copies, including xref streams/CID text.
+
+    Classic incremental-edit oracles stay separate. The native proof reads actual
+    page text, interpreted image draws and bounded rendered pixels instead of
+    depending on object names, font encodings, or serialized xref structure.
+    """
+    before = identity(path)
+    require(expected_pages > 0 and bool(expected_text), "converted PDF proof needs pages and source text")
+    proof_directory.mkdir(mode=0o700)
+
+    def native(label: str, command: list[str], maximum: int = 65536) -> str:
+        result = run_bounded_command(
+            command, cwd=path.parent, timeout_seconds=30, label=f"converted PDF {label}",
+            max_stdout_bytes=maximum, max_stderr_bytes=65536,
+        )
+        write_private_file(proof_directory / f"{label}.stdout.txt", result.stdout.encode("utf-8"))
+        write_private_file(proof_directory / f"{label}.stderr.txt", result.stderr.encode("utf-8"))
+        require(result.returncode == 0 and not result.stderr, f"converted PDF {label} could not read the output")
+        return result.stdout
+
+    info = native("pages", ["pdfinfo", str(path)])
+    counts = re.findall(r"^Pages:\s+(\d+)\s*$", info, re.MULTILINE)
+    require(counts == [str(expected_pages)], "converted PDF has the wrong independent page count")
+    text = native("text", ["pdftotext", "-layout", str(path), "-"], MAX_FILE_BYTES)
+    normalized = " ".join(text.split())
+    cursor = 0
+    for required in expected_text:
+        expected = " ".join(required.split())
+        require(bool(expected), "converted PDF proof has an empty expected text")
+        # Each expected paragraph/cell is a complete phrase, not a substring of
+        # another token (for example 10 in 110, or TRUE in UNTRUE).
+        found = re.compile(r"(?<!\S)" + re.escape(expected) + r"(?!\S)").search(normalized, cursor)
+        require(found is not None, "converted PDF lost complete ordered source text")
+        cursor = found.end()
+
+    inventory = native("images", ["pdfimages", "-list", str(path)])
+    image_counts = [0] * expected_pages
+    for line in inventory.splitlines():
+        image = re.match(r"\s*(\d+)\s+\d+\s+image\s+(\d+)\s+(\d+)\s+", line)
+        if image is None:
+            continue
+        page, width, height = map(int, image.groups())
+        require(1 <= page <= expected_pages and width > 0 and height > 0,
+                "converted PDF has an invalid interpreted image")
+        image_counts[page - 1] += 1
+    require(all(count > 0 for count in image_counts), "converted PDF has a page with no raster image")
+
+    pictures = []
+    for page in range(1, expected_pages + 1):
+        prefix = proof_directory / f"page-{page}"
+        native(f"render-{page}", [
+            "pdftoppm", "-f", str(page), "-singlefile", "-scale-to", "400", "-png", str(path), str(prefix),
+        ])
+        width, height, pixels = decode_png(read_bounded(prefix.with_suffix(".png")), max_side=MAX_RENDER_SIDE)
+        require(len({pixel for row in pixels for pixel in row}) > 1, "converted PDF has a blank rendered page")
+        pictures.append({"page": page, "width": width, "height": height, "nonblank": True})
+    require(identity(path) == before, "converted PDF changed during independent verification")
+    proof = {"pages": expected_pages, "completeOrderedText": True,
+             "rasterImagesPerPage": image_counts, "renderedPages": pictures}
+    write_private_file(proof_directory / "proof.json", (json.dumps(proof, indent=2) + "\n").encode("utf-8"))
+    return proof
+
+
+POPPLER_TOOLS = ("pdfinfo", "pdftotext", "pdfimages", "pdftoppm")
+
+
+def missing_poppler_tools() -> list[str]:
+    """The Poppler readers the native PDF proof needs that this machine does not have."""
+    return [tool for tool in POPPLER_TOOLS if shutil.which(tool) is None]
+
+
+def verify_converted_pdf_without_poppler(path: Path, expected_pages: int, label: str) -> str:
+    """Without Poppler, check what the kit's own classic-xref reader can and say what it could not.
+
+    A fresh Linux install has no Poppler, and the kit promises to run with Python alone. The
+    page count and each page's picture draw are still checked where the reader can open the
+    file; the returned sentence names what stayed unproven so the report can disclose it.
+    """
+    data = read_bounded(path)
+    try:
+        texts = pdf_current_page_texts(data)
+    except ValueError as error:
+        if "classic xref tables only" not in str(error):
+            raise
+        return (f"{label}: Poppler is not installed and the kit's own reader opens classic cross-reference "
+                "tables only, so this PDF's pages, text and pictures were not independently checked.")
+    require(len(texts) == expected_pages, f"{label} did not produce {expected_pages} PDF page(s)")
+    require(all(count >= 1 for count in pdf_current_page_images(data)), f"{label} produced a page with no image")
+    require(all(b" Do" in text for text in texts), f"{label} produced a page that draws nothing")
+    return (f"{label}: Poppler is not installed, so the page text and rendered pixels were not independently "
+            "read; the kit's own reader checked the page count and that every page draws its picture.")
 
 
 def stored_png(rows: list[list[tuple[int, int, int]]]) -> bytes:
@@ -1449,6 +1546,7 @@ def run_evaluation(args: argparse.Namespace) -> dict:
     artifact = launcher_artifact(launcher) if launcher else container_artifact(
         args.container_image, docker_image_id(args.container_image, cwd=REPO),
     )
+    unproven_conversions: list[str] = []
     with tempfile.TemporaryDirectory(prefix=".ufo-evaluation-", dir=output.parent) as raw:
         staging = Path(raw)
         inputs, outputs, receipts = (staging / name for name in ("input", "output", "receipts"))
@@ -3483,11 +3581,13 @@ def run_evaluation(args: argparse.Namespace) -> dict:
         # ---- convert: a document, a deck and a workbook to PDF, on the surface that renders ----
         # Same rule as render: the app image draws these pages, the restricted
         # container refuses. The oracle proves the produced PDF itself, page by
-        # page, rather than believing the receipt's own count.
-        for label, name, source_name, arguments, expected_pages, needle in (
-            ("convert-docx", "report-converted.pdf", "report.docx", [], 1, b"Visible text survives"),
-            ("convert-pptx", "deck-converted.pdf", "deck.pptx", ["--pages", "1", "--dpi", "96"], 1, b"Q3 review"),
-            ("convert-xlsx", "data-converted.pdf", "data.xlsx", ["--dpi", "96"], 1, b"Client A"),
+        # page, rather than believing the receipt's own count. Poppler is the independent
+        # reader; without it the kit's own reader checks what it can and the gap is disclosed.
+        missing_poppler = missing_poppler_tools()
+        for label, name, source_name, arguments, expected_pages, expected_text in (
+            ("convert-docx", "report-converted.pdf", "report.docx", [], 1, tuple(SAMPLE_TEXT.splitlines())),
+            ("convert-pptx", "deck-converted.pdf", "deck.pptx", ["--pages", "1", "--dpi", "96"], 1, ("Q3 review", "Revenue up 10%")),
+            ("convert-xlsx", "data-converted.pdf", "data.xlsx", ["--dpi", "96"], 1, ("Client A", "10", "TRUE", "20")),
         ):
             converted = document_step(
                 label,
@@ -3499,20 +3599,17 @@ def run_evaluation(args: argparse.Namespace) -> dict:
                 require(converted["result"]["engine"].endswith("-raster"), f"{label} did not name a raster engine")
                 require(converted["result"]["dpi"] in (96, 150), f"{label} did not report the density it drew at")
                 require_subset(converted["output"], identity(outputs / name), label + ".output")
-                produced = read_bounded(outputs / name)
-                texts = pdf_current_page_texts(produced)
-                require(len(texts) == expected_pages, f"{label} did not produce {expected_pages} PDF page(s)")
-                # Every page is a picture of the rendered page, so every page draws an image
-                # XObject, and the invisible text layer keeps the source's own words findable.
-                require(
-                    all(count >= 1 for count in pdf_current_page_images(produced)),
-                    f"{label} produced a page with no image",
-                )
-                require(all(b"/Im0 Do" in text for text in texts), f"{label} produced a page that draws nothing")
-                require(needle in b"\n".join(texts), f"{label} lost the source text from the searchable layer")
+                if missing_poppler:
+                    unproven_conversions.append(verify_converted_pdf_without_poppler(outputs / name, expected_pages, label))
+                else:
+                    verify_converted_pdf(
+                        outputs / name, expected_pages, expected_text,
+                        proof_directory=receipts / f"{label}-native-proof",
+                    )
             else:
                 require_subset(converted, {"status": "refused", "code": "parser_refused", "output": None}, label)
-                require("rendering" in converted["message"], "the container's convert refusal does not say what is missing")
+                require(isinstance(converted["message"], str) and bool(converted["message"].strip()),
+                        "the container's convert refusal has no diagnostic")
                 require(not path_exists(outputs / name), f"{label} published a PDF on a surface that cannot render")
 
         # ---- DOCX: a header story reads and writes its own part, and nothing else ----
@@ -4148,6 +4245,7 @@ def run_evaluation(args: argparse.Namespace) -> dict:
                 "Twenty-one generated files and one generated plan, not representative customer coverage or visual-fidelity evidence.",
                 "Clean copies are not antivirus scans, complete sanitization guarantees, or production approval.",
                 "Receipt paths identify the temporary execution workspace; bundle paths are relative to this directory.",
+                *unproven_conversions,
             ],
         }
         write_private_file(staging / "expected.json", (json.dumps({

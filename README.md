@@ -53,8 +53,8 @@ ufo skill install --agent claude-code --dir "$PWD"
 [`install.sh`](https://github.com/krauqllc/ufo-cli/blob/main/install.sh) downloads the app image from the latest
 [release](https://github.com/krauqllc/ufo-cli/releases), checks it against the
 release's `SHA256SUMS` and installs it under `~/.local`, without sudo. The same
-release has a Debian package (`sudo apt install ./universal-file-opener_1.6.0_amd64.deb`)
-and `ufo-cli-1.6.0-docker.tar`, an archive of the container image for offline transfer.
+release has a Debian package (`sudo apt install ./universal-file-opener_1.7.1_amd64.deb`)
+and `ufo-cli-1.7.1-docker.tar`, an archive of the container image for offline transfer.
 
 ### Container
 
@@ -66,14 +66,14 @@ docker run --rm --network none --read-only --cap-drop ALL \
   --pids-limit 128 --cpus 2 --memory 1g \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
   --mount type=bind,src="$PWD",dst=/input,readonly \
-  ghcr.io/krauqllc/ufo-cli:1.6.0 text /input/report.docx
+  ghcr.io/krauqllc/ufo-cli:1.7.1 text /input/report.docx
 ```
 
 No GitHub login is needed. The temporary mount is required. For edits, mount a
 separate writable output folder at `/output` and select a new file there. The
 container reads, edits and recognizes text; page rendering and Office-to-PDF
 conversion need the application package. For a deployment pinned to an immutable
-image, use the digest in the [release notes](https://github.com/krauqllc/ufo-cli/releases/tag/v1.6.0).
+image, use the digest in the [release notes](https://github.com/krauqllc/ufo-cli/releases/tag/v1.7.1).
 
 ### Connect an agent
 
@@ -94,7 +94,7 @@ From a clone of this repository, with Python 3.10+ and `jsonschema` installed:
 
 ```sh
 python3 tools/cli/first_run_demo.py --ufo "$(command -v ufo)" \
-  --expect-version 1.6.0 --output first-look --mcp
+  --expect-version 1.7.1 --output first-look --mcp
 ```
 
 The short example generates two fictional inputs. It collects basic information
@@ -168,14 +168,14 @@ loads formulae from other taps only after you trust them:
 `brew trust --formula krauqllc/ufo/ufo`, then `brew install krauqllc/ufo/ufo`.
 The release also provides a complete local
 MCPB bundle for compatible Linux clients, listed in the
-[official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.krauqllc%2Fufo-cli/versions/1.6.0-1).
-Directory revision `1.6.0-1` provides the matching `1.6.0` engine and bundle.
+[official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.krauqllc%2Fufo-cli/versions/1.7.1-1).
+Directory revision `1.7.1-1` provides the matching `1.7.1` engine and bundle.
 Choose only existing task folders when installing the bundle; no directories
 are granted by default. The npm package
 [`@krauq/ufo-cli`](https://www.npmjs.com/package/@krauq/ufo-cli) installs the
-same verified runtime; version `1.6.0` appears there once the publisher
+same verified runtime; version `1.7.1` appears there once the publisher
 approves it with 2FA, which `npm view @krauq/ufo-cli versions` shows. On npm 12 use
-`npm install --global @krauq/ufo-cli@1.6.0 --allow-scripts=@krauq/ufo-cli`;
+`npm install --global @krauq/ufo-cli@1.7.1 --allow-scripts=@krauq/ufo-cli`;
 on npm 11 or earlier, omit `--allow-scripts` and keep installation scripts enabled.
 The wrapper verifies and installs this exact Linux runtime. Smithery and Glama
 account submissions are separate pending steps.
@@ -184,8 +184,8 @@ account submissions are separate pending steps.
 
 ```sh
 UFO=$(command -v ufo)
-python3 tools/cli/evaluate_sample.py --ufo "$UFO" --expect-version 1.6.0 --output sample-result
-python3 tools/cli/own_file_evaluation.py --files ~/my-files --ufo "$UFO" --expect-version 1.6.0 --output my-files-report
+python3 tools/cli/evaluate_sample.py --ufo "$UFO" --expect-version 1.7.1 --output sample-result
+python3 tools/cli/own_file_evaluation.py --files ~/my-files --ufo "$UFO" --expect-version 1.7.1 --output my-files-report
 python3 tools/corpus/download_realworld_corpus.py --download --output corpus
 python3 tools/corpus/compare_agent_tools.py --download --corpus tools/corpus/realworld_corpus_manifest.tsv --corpus-root corpus --ufo "$UFO"
 ```

@@ -1,6 +1,6 @@
 {
   "name": "@krauq/ufo-cli",
-  "version": "1.6.0",
+  "version": "1.7.1",
   "private": false,
   "description": "Pinned local file inspection, extraction and guarded edits for CLI and MCP. Linux x86_64.",
   "mcpName": "io.github.krauqllc/ufo-cli",
