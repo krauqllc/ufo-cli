@@ -406,6 +406,10 @@ def reopen_problems(
 
 
 def main() -> int:
+    # 3.3 ZIP edits write an untouched entry's DOS time from its UTC timestamp in the
+    # runtime's zone. Run host edits in UTC, as the restricted container does, so one
+    # reviewed expectation holds on both surfaces (ROADMAP: keep original DOS fields).
+    os.environ["TZ"] = "UTC"
     parser = argparse.ArgumentParser(description=__doc__)
     surface = parser.add_mutually_exclusive_group()
     surface.add_argument("--ufo", type=Path)

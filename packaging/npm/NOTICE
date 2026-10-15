@@ -55,7 +55,9 @@ web-engine/legal/component-inventory.tsv.
 
 Vendored asset notices live with the assets: viewer-core/src/main/resources/
 NOTICE.md records the modified Roboto derivatives and their exact byte
-identities. The Android notice resource is app/src/main/res/raw/
+identities, and the public domain LZMA SDK PPMd7 decoder port. The decoder
+source provenance and version are in viewer-core/src/main/resources/
+component-inventory.tsv. The Android notice resource is app/src/main/res/raw/
 third_party_notices.txt.
 
 Named obligations that survive redistribution, from the review rows above:

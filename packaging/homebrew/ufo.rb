@@ -1,4 +1,4 @@
-# Pinned to the published, signed CLI 1.7.1 release. The URL, size and
+# Pinned to the published, signed CLI 1.10.1 release. The URL, size and
 # digest were verified against GitHub and the owner's signed SHA256SUMS.
 #
 # This belongs in a Krauq-maintained tap (for example, krauqllc/homebrew-tap,
@@ -14,7 +14,7 @@
 class Ufo < Formula
   desc "Inspect files, extract content, and make guarded edits locally"
   homepage "https://universalfileopener.com/cli/"
-  version "1.7.1"
+  version "1.10.1"
   # The shipped binaries are not under an SPDX-expressible license. The command
   # layer source is Apache-2.0; the distributed executable is not.
   license :cannot_represent
@@ -23,8 +23,8 @@ class Ufo < Formula
   # platform it validates. Installation stays limited to Linux x86_64 by the
   # two requirements below; a Linux-only url block made the tap refuse to load
   # ("formula requires at least a URL") under Homebrew 7.
-  url "https://github.com/krauqllc/ufo-cli/releases/download/v1.7.1/universal-file-opener-1.7.1-linux-x64.tar.gz"
-  sha256 "3170f5a141bd0fa0c645564f2a656b1c8e11d863d2600e49834756b3d88ba647"
+  url "https://github.com/krauqllc/ufo-cli/releases/download/v1.10.1/universal-file-opener-1.10.1-linux-x64.tar.gz"
+  sha256 "aa41529c837d6b4dd66838d2f9607ab71a6c184b638f7cc0d3c006a1f22d9307"
 
   depends_on :linux
   depends_on arch: :x86_64
