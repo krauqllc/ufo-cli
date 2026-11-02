@@ -2283,10 +2283,10 @@ def run_evaluation(args: argparse.Namespace) -> dict:
         cell_page = json.loads(read_bounded(outputs / "cells-range.json"))
         cells_validator.validate(cell_page)
         require_subset(cell_page["selection"], {"sheet": "Summary", "range": "A1:D1", "cells": [
-            {"ref": "A1", "row": 1, "column": 1, "type": "string", "value": "Client A", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "editable": True, "editRefusal": None},
-            {"ref": "B1", "row": 1, "column": 2, "type": "number", "value": "10", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "editable": True, "editRefusal": None},
-            {"ref": "C1", "row": 1, "column": 3, "type": "boolean", "value": "TRUE", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "editable": True, "editRefusal": None},
-            {"ref": "D1", "row": 1, "column": 4, "type": "formula", "value": None, "formula": "=B1*2", "cachedValue": "20", "limitation": None, "valueLimitation": None, "editable": True, "editRefusal": None},
+            {"ref": "A1", "row": 1, "column": 1, "type": "string", "value": "Client A", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "displayText": "Client A", "displaySource": "stored", "displayLimitation": None, "editable": True, "editRefusal": None},
+            {"ref": "B1", "row": 1, "column": 2, "type": "number", "value": "10", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "displayText": "10", "displaySource": "stored", "displayLimitation": None, "editable": True, "editRefusal": None},
+            {"ref": "C1", "row": 1, "column": 3, "type": "boolean", "value": "TRUE", "formula": None, "cachedValue": None, "limitation": None, "valueLimitation": None, "displayText": "TRUE", "displaySource": "stored", "displayLimitation": None, "editable": True, "editRefusal": None},
+            {"ref": "D1", "row": 1, "column": 4, "type": "formula", "value": None, "formula": "=B1*2", "cachedValue": "20", "limitation": None, "valueLimitation": None, "displayText": "20", "displaySource": "evaluated", "displayLimitation": None, "editable": True, "editRefusal": None},
         ]}, "cells-range")
         cell_batch = ["edit", "cells", "--expect-sha256", workbook_hash, "--expect", "A1=string:Client A", "--set", "A1=string:Client B", "--expect", "B1=number:10", "--set", "B1=number:20"]
         cell_edit = document_step("cells-batch", [*cell_batch, "-o", f"{output_root}/edited.xlsx", workbook], "edit-receipt", inputs / "data.xlsx")

@@ -462,6 +462,334 @@
         },
         {
           "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "pages",
+            "raster",
+            "dpi"
+          ],
+          "properties": {
+            "engine": {
+              "const": "postscript-pages"
+            },
+            "pages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "raster": {
+              "const": false
+            },
+            "dpi": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "target",
+            "rows",
+            "columns",
+            "sourceRows",
+            "startRow",
+            "partial",
+            "labels",
+            "sha256",
+            "notice"
+          ],
+          "properties": {
+            "engine": {
+              "const": "statistics-table-copy"
+            },
+            "target": {
+              "enum": [
+                "csv",
+                "xlsx",
+                "txt",
+                "md",
+                "opml"
+              ]
+            },
+            "rows": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5000
+            },
+            "columns": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 256
+            },
+            "sourceRows": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            "startRow": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            "partial": {
+              "type": "boolean"
+            },
+            "labels": {
+              "type": "boolean"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "notice": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "target": {
+                    "enum": [
+                      "txt",
+                      "md",
+                      "opml"
+                    ]
+                  }
+                },
+                "required": [
+                  "target"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "startRow": {
+                    "const": 0
+                  },
+                  "partial": {
+                    "const": false
+                  },
+                  "rows": {
+                    "minimum": 1
+                  },
+                  "sourceRows": {
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "features",
+            "target",
+            "notices"
+          ],
+          "properties": {
+            "engine": {
+              "const": "offline-vector-map"
+            },
+            "features": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "target": {
+              "enum": [
+                "geojson",
+                "kml",
+                "gpx",
+                "png",
+                "svg"
+              ]
+            },
+            "notices": {
+              "type": "string",
+              "maxLength": 128,
+              "pattern": "^(?:(?:Limit|MissingDbf|Unsupported|ImagesOmitted|UnknownCrs)(?:,(?:Limit|MissingDbf|Unsupported|ImagesOmitted|UnknownCrs))*)?$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "pages",
+            "raster",
+            "dpi",
+            "entities",
+            "partial"
+          ],
+          "properties": {
+            "engine": {
+              "enum": [
+                "cad-dxf-vector",
+                "cad-dxf-raster"
+              ]
+            },
+            "pages": {
+              "const": 1
+            },
+            "raster": {
+              "type": "boolean"
+            },
+            "dpi": {
+              "type": "null"
+            },
+            "entities": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "partial": {
+              "type": "boolean"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "engine": {
+                    "const": "cad-dxf-vector"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "raster": {
+                    "const": false
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "engine": {
+                    "const": "cad-dxf-raster"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "raster": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "target",
+            "partial",
+            "tables",
+            "sha256",
+            "notice"
+          ],
+          "properties": {
+            "engine": {
+              "const": "access-table-copy"
+            },
+            "target": {
+              "enum": [
+                "csv",
+                "xlsx"
+              ]
+            },
+            "partial": {
+              "type": "boolean"
+            },
+            "tables": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "rows",
+                  "sourceRows"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024
+                  },
+                  "rows": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5000
+                  },
+                  "sourceRows": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000000
+                  }
+                }
+              }
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "notice": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "engine",
+            "target",
+            "frames",
+            "sha256"
+          ],
+          "properties": {
+            "engine": {
+              "const": "dicom-image"
+            },
+            "target": {
+              "enum": [
+                "png",
+                "jpg",
+                "gif",
+                "pdf",
+                "csv",
+                "json"
+              ]
+            },
+            "frames": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1024
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
         }
       ]
     },
@@ -490,6 +818,21 @@
         },
         {
           "$ref": "#/$defs/nativeChartLimits"
+        },
+        {
+          "$ref": "#/$defs/statisticsLimits"
+        },
+        {
+          "$ref": "#/$defs/mapLimits"
+        },
+        {
+          "$ref": "#/$defs/cadLimits"
+        },
+        {
+          "$ref": "#/$defs/accessLimits"
+        },
+        {
+          "$ref": "#/$defs/dicomLimits"
         }
       ]
     },
@@ -1089,6 +1432,258 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "engine": {
+                "const": "statistics-table-copy"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/statisticsLimits"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "const": "offline-vector-map"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/mapLimits"
+          },
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "maximum": 33554432
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 67108864
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "enum": [
+                  "cad-dxf-vector",
+                  "cad-dxf-raster"
+                ]
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/cadLimits"
+          },
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "maximum": 33554432
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 33554432
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "engine": {
+                "const": "access-table-copy"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/accessLimits"
+          },
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "maximum": 1073741824
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 67108864
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "result": {
+                  "properties": {
+                    "target": {
+                      "const": "csv"
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "output": {
+                  "properties": {
+                    "path": {
+                      "pattern": "(?i)\\.zip$"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "result": {
+                  "properties": {
+                    "target": {
+                      "const": "xlsx"
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "output": {
+                  "properties": {
+                    "path": {
+                      "pattern": "(?i)\\.xlsx$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "completed"
+          },
+          "result": {
+            "properties": {
+              "engine": {
+                "const": "dicom-image"
+              }
+            },
+            "required": [
+              "engine"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "limits": {
+            "$ref": "#/$defs/dicomLimits"
+          },
+          "source": {
+            "properties": {
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 134217728
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "sizeBytes": {
+                "minimum": 1,
+                "maximum": 134217728
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "$defs": {
@@ -1239,6 +1834,190 @@
         },
         "maxDpi": {
           "const": 300
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "statisticsLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxOutputBytes",
+        "maxRows",
+        "maxCells",
+        "maxVariables",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 536870912
+        },
+        "maxOutputBytes": {
+          "const": 67108864
+        },
+        "maxRows": {
+          "const": 5000
+        },
+        "maxCells": {
+          "const": 100000
+        },
+        "maxVariables": {
+          "const": 256
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "mapLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxPages",
+        "maxOutputBytes",
+        "minDpi",
+        "maxDpi",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 33554432
+        },
+        "maxPages": {
+          "const": 1
+        },
+        "maxOutputBytes": {
+          "const": 67108864
+        },
+        "minDpi": {
+          "type": "null"
+        },
+        "maxDpi": {
+          "type": "null"
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "cadLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxPages",
+        "maxOutputBytes",
+        "minDpi",
+        "maxDpi",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 33554432
+        },
+        "maxPages": {
+          "const": 1
+        },
+        "maxOutputBytes": {
+          "const": 33554432
+        },
+        "minDpi": {
+          "type": "null"
+        },
+        "maxDpi": {
+          "type": "null"
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "accessLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxOutputBytes",
+        "maxRowsPerTable",
+        "maxCells",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 1073741824
+        },
+        "maxOutputBytes": {
+          "const": 67108864
+        },
+        "maxRowsPerTable": {
+          "const": 5000
+        },
+        "maxCells": {
+          "const": 100000
+        },
+        "workerTimeoutMillis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        },
+        "workerMaxHeapMiB": {
+          "type": "integer",
+          "minimum": 32,
+          "maximum": 2048
+        }
+      }
+    },
+    "dicomLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxSourceBytes",
+        "maxOutputBytes",
+        "workerTimeoutMillis",
+        "workerMaxHeapMiB"
+      ],
+      "properties": {
+        "maxSourceBytes": {
+          "const": 134217728
+        },
+        "maxOutputBytes": {
+          "const": 134217728
         },
         "workerTimeoutMillis": {
           "type": "integer",

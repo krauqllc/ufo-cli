@@ -3,7 +3,7 @@
   "name": "io.github.krauqllc/ufo-cli",
   "title": "Universal File Opener CLI",
   "description": "Inspect files, extract content and make guarded edits locally. Linux x86_64, glibc 2.35+.",
-  "version": "1.10.2-1",
+  "version": "4.0.0-1",
   "websiteUrl": "https://universalfileopener.com/cli/",
   "repository": {
     "url": "https://github.com/krauqllc/ufo-cli",
@@ -12,9 +12,9 @@
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/krauqllc/ufo-cli/releases/download/v1.10.2/ufo-cli-1.10.2-linux-x64.mcpb",
-      "version": "1.10.2",
-      "fileSha256": "5e078cf33c95f09e29ca3fbc39884d92d34d7fdad66dd38278eb79fbc04a70fc",
+      "identifier": "https://github.com/krauqllc/ufo-cli/releases/download/v4.0.0/ufo-cli-4.0.0-linux-x64.mcpb",
+      "version": "4.0.0",
+      "fileSha256": "da9a109aaf2ed449d4f05ab1a6b66f368908258772da02d2c80de95cdb425402",
       "transport": {
         "type": "stdio"
       }
@@ -26,7 +26,7 @@
         "platforms": [
           "linux-x64"
         ],
-        "setupNetwork": "The complete 204 MB MCPB bundle is downloaded during client installation. Its approved runtime is embedded; startup performs no fetch.",
+        "setupNetwork": "The complete 249 MB MCPB bundle is downloaded during client installation. Its approved runtime is embedded; startup performs no fetch.",
         "runtimeNetwork": "none on document paths",
         "telemetry": "none",
         "sourceModification": "never",
@@ -51,8 +51,8 @@
         ],
         "glibcMinVersion": "2.35",
         "allowedRoots": "The bundle requires existing absolute task directories selected by the user. No directories are granted by default.",
-        "engineVersion": "1.10.2",
-        "registryRevision": "Metadata release 1.10.2-1 offers the accepted MCPB route. Its engine and bundle are 1.10.2; a later stable registry release can add npm."
+        "engineVersion": "4.0.0",
+        "registryRevision": "Metadata release 4.0.0-1 offers the accepted MCPB route. Its engine and bundle are 4.0.0; a later stable registry release can add npm."
       }
     }
   }

@@ -57,6 +57,9 @@
         },
         {
           "$ref": "ufo-epub-chapters-v1.schema.json"
+        },
+        {
+          "$ref": "ufo-sheet-cells-v1.schema.json"
         }
       ]
     },

@@ -270,6 +270,18 @@
                   "boolean_value_invalid"
                 ]
               },
+              "displayText": {
+                "type": ["string", "null"],
+                "description": "Formatted preview text, with supported formulas evaluated offline; null when unavailable. Supplementary display only, never an edit preimage. Optional for older v1 reads."
+              },
+              "displaySource": {
+                "enum": [null, "evaluated", "stored"],
+                "description": "Whether displayText comes from evaluation or saved data. Optional for older v1 reads."
+              },
+              "displayLimitation": {
+                "type": ["string", "null"],
+                "description": "Why preview evaluation or formatting is unavailable. Exact stored fields remain independent. Optional for older v1 reads."
+              },
               "valueLimitation": {
                 "description": "Why a stored value or formula cache cannot be read, independent of formula edit restrictions. Optional for older v1 reads.",
                 "enum": [null, "shared_string_missing", "value_length_limit", "boolean_value_invalid"]
@@ -353,6 +365,9 @@
     },
     "partial": {
       "type": "boolean"
+    },
+    "displayScope": {
+      "const": "displayText follows the bounded workbook preview; displaySource identifies evaluated or saved values; exact edit preimages remain in value, formula and cachedValue"
     },
     "scope": {
       "const": "worksheet cells by address; formula values are as saved, not recalculated; merged ranges, styles, comments and drawings are not read"

@@ -6,19 +6,19 @@ change them without breaking them, and hand back clean copies. UFO runs
 locally as a CLI or stdio MCP server. Reports state what was inspected and
 what remains unknown; findings are advisory, not an antivirus verdict.
 
-This package installs the exact UFO 1.10.2 runtime. Direct
-[Linux downloads](https://github.com/krauqllc/ufo-cli/releases/tag/v1.10.2)
+This package installs the exact UFO 4.0.0 runtime. Direct
+[Linux downloads](https://github.com/krauqllc/ufo-cli/releases/tag/v4.0.0)
 are also available. Install and check your first file:
 
 ```sh
-npm install --global @krauq/ufo-cli@1.10.2 --allow-scripts=@krauq/ufo-cli
+npm install --global @krauq/ufo-cli@4.0.0 --allow-scripts=@krauq/ufo-cli
 ufo --version
 ufo doctor
 ufo inspect --json ./your-file
 ```
 
 On npm 12, the explicit script approval lets UFO's installer run. With npm 11
-or earlier, use `npm install --global @krauq/ufo-cli@1.10.2` with install scripts
+or earlier, use `npm install --global @krauq/ufo-cli@4.0.0` with install scripts
 enabled; omit `--allow-scripts`.
 
 Linux x86_64, glibc 2.35+, Node.js 18.17+ and GNU tar are required. Ubuntu
@@ -30,8 +30,8 @@ Your npm version may require a newer Node.js release than the wrapper does.
 For example, npm 12.2.0 requires Node.js 22.22.2 or later in 22.x, 24.15.0 or
 later in 24.x, or 26+. Use a Node.js version supported by your npm release.
 
-Installation downloads the pinned 202 MB release archive over HTTPS and checks
-its hash and complete runtime identity. npm install scripts must be enabled.
+Installation downloads the pinned release archive over HTTPS and checks
+its byte count, hash and complete runtime identity. npm install scripts must be enabled.
 Document processing sends no network requests or telemetry. A connected agent
 can send tool results to its model provider.
 
@@ -101,7 +101,7 @@ Use `npm uninstall --global @krauq/ufo-cli` to remove the wrapper and downloaded
 runtime. It leaves your documents and per-user license in place. The optional
 `ufo license remove` command removes that license separately.
 
-To reuse an existing matching 1.10.2 installation, set
+To reuse an existing matching 4.0.0 installation, set
 `UFO_CLI_SKIP_DOWNLOAD=1` and `UFO_CLI_BINARY` to its absolute `bin/ufo` path
 during installation. The resolved path is saved and reused on later launches
 and rebuilds. The wrapper rejects another version and its own launcher.

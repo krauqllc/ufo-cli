@@ -123,6 +123,9 @@
               "enum": [
                 "pdf",
                 "image",
+                "model3d",
+                "drawing",
+                "geographic-map",
                 "audio",
                 "video",
                 "archive",
@@ -400,14 +403,19 @@
                   "sha256",
                   "hashed"
                 ],
+                "allOf": [{
+                  "if": {"properties": {"hashed": {"const": true}}},
+                  "then": {"properties": {"sizeBytes": {"type": "integer", "minimum": 0}}}
+                }],
                 "properties": {
                   "path": {
                     "type": "string",
                     "minLength": 1
                   },
                   "sizeBytes": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": ["integer", "null"],
+                    "minimum": 0,
+                    "description": "Uncompressed bytes from the listing or a complete bounded read; null when neither is known."
                   },
                   "compressedBytes": {
                     "type": [
@@ -421,7 +429,7 @@
                   },
                   "kind": {
                     "enum": [
-                      "pdf", "image", "audio", "video", "archive", "web",
+                      "pdf", "image", "model3d", "drawing", "geographic-map", "audio", "video", "archive", "web",
                       "office", "markdown", "sqlite", "font", "certificate",
                       "calendar", "contact", "email", "spreadsheet", "text",
                       "binary", null

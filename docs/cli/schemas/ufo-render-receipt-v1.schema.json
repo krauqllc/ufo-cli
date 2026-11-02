@@ -165,13 +165,47 @@
                 "pdfbox",
                 "compose-docx",
                 "compose-pptx",
-                "compose-xlsx"
+                "compose-xlsx",
+                "gdi-metafile",
+                "software-model3d",
+                "offline-vector-map",
+                "dicom-image"
               ]
             },
             "partial": {
               "type": "boolean"
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "engine": {
+                    "const": "software-model3d"
+                  }
+                },
+                "required": [
+                  "engine"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "page": {
+                    "const": 0
+                  },
+                  "pageCount": {
+                    "const": 1
+                  },
+                  "width": {
+                    "maximum": 2048
+                  },
+                  "height": {
+                    "maximum": 2048
+                  }
+                }
+              }
+            }
+          ]
         },
         {
           "type": "null"
@@ -191,28 +225,56 @@
       ]
     },
     "limits": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "maxSourceBytes",
-        "workerTimeoutMillis",
-        "workerMaxHeapMiB"
-      ],
-      "properties": {
-        "maxSourceBytes": {
-          "const": 268435456
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maxSourceBytes",
+            "workerTimeoutMillis",
+            "workerMaxHeapMiB"
+          ],
+          "properties": {
+            "maxSourceBytes": {
+              "const": 268435456
+            },
+            "workerTimeoutMillis": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300000
+            },
+            "workerMaxHeapMiB": {
+              "type": "integer",
+              "minimum": 32,
+              "maximum": 2048
+            }
+          }
         },
-        "workerTimeoutMillis": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 300000
-        },
-        "workerMaxHeapMiB": {
-          "type": "integer",
-          "minimum": 32,
-          "maximum": 2048
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maxSourceBytes",
+            "workerTimeoutMillis",
+            "workerMaxHeapMiB"
+          ],
+          "properties": {
+            "maxSourceBytes": {
+              "const": 33554432
+            },
+            "workerTimeoutMillis": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300000
+            },
+            "workerMaxHeapMiB": {
+              "type": "integer",
+              "minimum": 32,
+              "maximum": 2048
+            }
+          }
         }
-      }
+      ]
     },
     "durationMillis": {
       "type": "integer",
@@ -222,15 +284,62 @@
       "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "required": [
+        "tier",
+        "organization",
+        "expiresAt",
+        "keyId",
+        "source",
+        "verified",
+        "note"
+      ],
       "properties": {
-        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
-        "organization": { "type": ["string", "null"] },
-        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
-        "keyId": { "type": ["string", "null"] },
-        "source": { "type": ["string", "null"] },
-        "verified": { "type": "boolean" },
-        "note": { "type": ["string", "null"] }
+        "tier": {
+          "enum": [
+            "free",
+            "organization-50",
+            "organization-500",
+            "organization-unbounded"
+          ]
+        },
+        "organization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiresAt": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "keyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "network": {

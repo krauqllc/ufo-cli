@@ -1,0 +1,707 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://krauq.com/schemas/ufo-sheet-cells-v1.schema.json",
+  "title": "UFO read-only sheet inventories and table ranges v1",
+  "description": "Read-only ODS, XLS, XLSB, dBase, statistics and Access table reads. No edit coordinates are granted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "source",
+    "format",
+    "sheets",
+    "selection",
+    "partial",
+    "scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "com.krauq.ufo.sheet-cells"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "format": {
+      "enum": [
+        "ods",
+        "xls",
+        "xlsb",
+        "dbf",
+        "dta",
+        "sav",
+        "zsav",
+        "sas7bdat",
+        "xpt",
+        "access"
+      ]
+    },
+    "sheets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "name",
+          "visibility",
+          "dimension",
+          "complete"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "visibility": {
+            "description": "Null when the format's reader does not report it (ODS).",
+            "enum": [
+              "visible",
+              "hidden",
+              "veryhidden",
+              null
+            ]
+          },
+          "dimension": {
+            "description": "The rectangle of cells that hold something, or null for an empty sheet.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}:[A-Z]{1,3}[1-9][0-9]{0,6}$"
+          },
+          "complete": {
+            "description": "False when the sheet stores more rows, columns or cells than the reader keeps; cells past that bound read as beyond_read_limit.",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "selection": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "sheet",
+        "range",
+        "cells"
+      ],
+      "properties": {
+        "sheet": {
+          "type": "string",
+          "minLength": 1
+        },
+        "range": {
+          "type": "string",
+          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}:[A-Z]{1,3}[1-9][0-9]{0,6}$"
+        },
+        "cells": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "row",
+              "column",
+              "type",
+              "value",
+              "formula",
+              "cachedValue",
+              "storedValue",
+              "limitation"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1048576
+              },
+              "column": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16384
+              },
+              "type": {
+                "description": "An XLS cell is number or string: a formula reads as the result it saved, and a boolean or error value as the text it shows. A cell past the reader's bound is unknown, never empty.",
+                "enum": [
+                  "empty",
+                  "string",
+                  "number",
+                  "boolean",
+                  "date",
+                  "time",
+                  "formula",
+                  "unknown"
+                ]
+              },
+              "value": {
+                "description": "The text the grid shows; null for a formula, whose result is cachedValue.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "formula": {
+                "description": "ODS only: the OpenFormula text the file stores, such as of:=SUM([.B1:.B3]).",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cachedValue": {
+                "description": "A formula's result as the file saved it and the grid shows it; null when it saved none.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "storedValue": {
+                "description": "The stored machine value or statistics code, before value label and date display formatting.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "limitation": {
+                "enum": [
+                  null,
+                  "beyond_read_limit",
+                  "memo_companion_unavailable",
+                  "binary_field",
+                  "calculated_value_unavailable",
+                  "unsupported_access_type",
+                  "ole_metadata_only",
+                  "binary_metadata_only",
+                  "complex_metadata"
+                ]
+              },
+              "missing": {
+                "type": "boolean",
+                "description": "A statistics missing value or an Access null. Stored values remain separate from displayed text."
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "formula"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    },
+                    "formula": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "formula": {
+                      "type": "null"
+                    },
+                    "cachedValue": {
+                      "type": "null"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "empty"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "value": {
+                      "type": "null"
+                    },
+                    "storedValue": {
+                      "type": "null"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "limitation": {
+                      "const": "beyond_read_limit"
+                    }
+                  },
+                  "required": [
+                    "limitation"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "type": {
+                      "const": "unknown"
+                    },
+                    "value": {
+                      "type": "null"
+                    },
+                    "storedValue": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "type": {
+                      "not": {
+                        "const": "unknown"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "partial": {
+      "type": "boolean"
+    },
+    "scope": {
+      "enum": [
+        "worksheet cells by address as the grid shows them, with each cell's stored machine value; a formula is the OpenFormula text the file stores beside the result it saved, not recalculated; styles, merged ranges, comments, charts and pictures are not read",
+        "worksheet cells by address as the grid shows them; a formula cell reads as the result the file saved, and its formula is not read; styles, merged ranges, comments, charts and pictures are not read",
+        "read-only dBase table cells by address; row 1 holds field names and later rows hold live records; deleted records are hidden and counted; memo companions are unavailable and binary fields use explicit placeholders; no edit coordinates",
+        "Read-only local Access tables. Row 1 contains column names. Only the selected bounded page is read. Queries are metadata and never executed."
+      ]
+    },
+    "dbase": {
+      "description": "DBF header metadata and the number of deleted records hidden by this read.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "recordCount",
+        "deletedRecords",
+        "headerLength",
+        "recordLength",
+        "languageDriver",
+        "codePage"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "recordCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "deletedRecords": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "headerLength": {
+          "type": "integer",
+          "minimum": 65,
+          "maximum": 65535
+        },
+        "recordLength": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 65535
+        },
+        "languageDriver": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "codePage": {
+          "enum": [
+            437,
+            850,
+            852,
+            866,
+            1250,
+            1251,
+            1252
+          ]
+        }
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "timestamp",
+        "encoding",
+        "format",
+        "recordCount",
+        "variableCount",
+        "startRow",
+        "notices",
+        "variables"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "maxLength": 32768
+        },
+        "timestamp": {
+          "type": "string",
+          "maxLength": 32768
+        },
+        "encoding": {
+          "type": "string",
+          "maxLength": 32768
+        },
+        "format": {
+          "type": "string",
+          "maxLength": 32768
+        },
+        "recordCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000
+        },
+        "variableCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "startRow": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000
+        },
+        "notices": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "maxLength": 32768
+          }
+        },
+        "variables": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "label",
+              "format",
+              "missing",
+              "missingRange",
+              "valueLabels"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 32768
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 32768
+              },
+              "format": {
+                "type": "string",
+                "maxLength": 32768
+              },
+              "missingRange": {
+                "type": "boolean"
+              },
+              "missing": {
+                "type": "array",
+                "maxItems": 3,
+                "items": {
+                  "type": "string",
+                  "maxLength": 32768
+                }
+              },
+              "valueLabels": {
+                "type": "object",
+                "maxProperties": 10000,
+                "additionalProperties": {
+                  "type": "string",
+                  "maxLength": 32768
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "tables",
+        "queries",
+        "relationships"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "maxLength": 8388608
+        },
+        "tables": {
+          "type": "string",
+          "maxLength": 8388608
+        },
+        "queries": {
+          "type": "string",
+          "maxLength": 8388608
+        },
+        "relationships": {
+          "type": "string",
+          "maxLength": 8388608
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "format": {
+            "const": "access"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "access"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "dbase"
+              ]
+            },
+            {
+              "required": [
+                "statistics"
+              ]
+            }
+          ]
+        },
+        "properties": {
+          "scope": {
+            "const": "Read-only local Access tables. Row 1 contains column names. Only the selected bounded page is read. Queries are metadata and never executed."
+          },
+          "sheets": {
+            "maxItems": 256
+          },
+          "selection": {
+            "properties": {
+              "cells": {
+                "items": {
+                  "required": [
+                    "missing"
+                  ],
+                  "properties": {
+                    "limitation": {
+                      "enum": [
+                        null,
+                        "beyond_read_limit",
+                        "calculated_value_unavailable",
+                        "unsupported_access_type",
+                        "ole_metadata_only",
+                        "binary_metadata_only",
+                        "complex_metadata"
+                      ]
+                    },
+                    "formula": {
+                      "type": "null"
+                    },
+                    "cachedValue": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "required": [
+            "access"
+          ]
+        },
+        "properties": {
+          "scope": {
+            "enum": [
+              "worksheet cells by address as the grid shows them, with each cell's stored machine value; a formula is the OpenFormula text the file stores beside the result it saved, not recalculated; styles, merged ranges, comments, charts and pictures are not read",
+              "worksheet cells by address as the grid shows them; a formula cell reads as the result the file saved, and its formula is not read; styles, merged ranges, comments, charts and pictures are not read",
+              "read-only dBase table cells by address; row 1 holds field names and later rows hold live records; deleted records are hidden and counted; memo companions are unavailable and binary fields use explicit placeholders; no edit coordinates"
+            ]
+          },
+          "selection": {
+            "properties": {
+              "cells": {
+                "items": {
+                  "properties": {
+                    "limitation": {
+                      "enum": [
+                        null,
+                        "beyond_read_limit",
+                        "memo_companion_unavailable",
+                        "binary_field"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "format": {
+                  "enum": [
+                    "dta",
+                    "sav",
+                    "zsav",
+                    "sas7bdat",
+                    "xpt"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "statistics"
+              ],
+              "not": {
+                "required": [
+                  "dbase"
+                ]
+              },
+              "properties": {
+                "selection": {
+                  "properties": {
+                    "cells": {
+                      "items": {
+                        "required": [
+                          "missing"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "statistics"
+                ]
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "format": {
+                        "const": "dbf"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "dbase"
+                    ],
+                    "properties": {
+                      "scope": {
+                        "const": "read-only dBase table cells by address; row 1 holds field names and later rows hold live records; deleted records are hidden and counted; memo companions are unavailable and binary fields use explicit placeholders; no edit coordinates"
+                      }
+                    }
+                  },
+                  "else": {
+                    "not": {
+                      "required": [
+                        "dbase"
+                      ]
+                    },
+                    "properties": {
+                      "scope": {
+                        "enum": [
+                          "worksheet cells by address as the grid shows them, with each cell's stored machine value; a formula is the OpenFormula text the file stores beside the result it saved, not recalculated; styles, merged ranges, comments, charts and pictures are not read",
+                          "worksheet cells by address as the grid shows them; a formula cell reads as the result the file saved, and its formula is not read; styles, merged ranges, comments, charts and pictures are not read"
+                        ]
+                      },
+                      "selection": {
+                        "properties": {
+                          "cells": {
+                            "items": {
+                              "properties": {
+                                "limitation": {
+                                  "enum": [
+                                    null,
+                                    "beyond_read_limit"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

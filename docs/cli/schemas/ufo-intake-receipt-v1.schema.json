@@ -133,6 +133,9 @@
           "enum": [
             "pdf",
             "image",
+            "model3d",
+            "drawing",
+            "geographic-map",
             "audio",
             "video",
             "archive",

@@ -54,8 +54,8 @@
       "required": ["engine", "language", "models", "pages", "pagesAvailable", "dpi", "truncated", "stoppedBy", "meanConfidence", "approximate", "notice"],
       "properties": {
         "engine": { "type": "string", "pattern": "^tesseract [0-9][0-9A-Za-z.+-]{0,31}$" },
-        "language": { "type": "string", "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$" },
-        "models": { "type": "string", "pattern": "^(deu|eng|fra|hin|ind|spa)(\\+(deu|eng|fra|hin|ind|spa)){0,2}$" },
+        "language": { "type": "string", "pattern": "^(deu|eng|fra|hin|ind|ita|pol|por|rus|spa|tur)(\\+(deu|eng|fra|hin|ind|ita|pol|por|rus|spa|tur)){0,2}$" },
+        "models": { "type": "string", "pattern": "^(deu|eng|fra|hin|ind|ita|pol|por|rus|spa|tur)(\\+(deu|eng|fra|hin|ind|ita|pol|por|rus|spa|tur)){0,2}$" },
         "pages": { "type": "array", "maxItems": 200, "items": { "type": "integer", "minimum": 1 } },
         "pagesAvailable": { "type": "integer", "minimum": 0 },
         "dpi": { "oneOf": [{ "type": "integer", "minimum": 72, "maximum": 400 }, { "type": "null" }] },

@@ -120,6 +120,17 @@
             "maxChapterBytes": {"const": 4194304}, "maxTextChars": {"const": 32768}, "maxTextOffset": {"const": 4194304}
           }
         },
+        "chmChapters": {
+          "description": "Read-only CHM sitemap/directory chapter inventory and text windows, with bounded LZX decoding.",
+          "type": "object", "additionalProperties": false,
+          "required": ["schema", "schemaVersion", "selector", "maxSourceBytes", "maxExpandedBytes", "maxChapters", "maxPageSize", "maxChapterBytes", "maxTextChars", "maxTextOffset", "readOnly"],
+          "properties": {
+            "schema": {"const": "com.krauq.ufo.chm-chapters"}, "schemaVersion": {"const": 1}, "selector": {"const": "chapter"},
+            "maxSourceBytes": {"const": 67108864}, "maxExpandedBytes": {"const": 134217728},
+            "maxChapters": {"const": 5000}, "maxPageSize": {"const": 200}, "maxChapterBytes": {"const": 4194304},
+            "maxTextChars": {"const": 32768}, "maxTextOffset": {"const": 4194304}, "readOnly": {"const": true}
+          }
+        },
         "pdfToOffice": {
           "type": "object", "additionalProperties": false,
           "required": ["maxSourceBytes", "maxSelectedPages", "maxTextChars", "maxParagraphs", "maxCells", "maxColumns", "maxOutputBytes", "pptxRenderingAvailable"],
@@ -182,8 +193,8 @@
           "properties": {
             "available": { "type": "boolean" },
             "refusal": { "description": "Present only when recognition is unavailable; the wording the verbs print.", "type": "string", "minLength": 1 },
-            "languages": { "description": "The bundled models, by Tesseract code.", "type": "array", "items": { "enum": ["deu", "eng", "fra", "hin", "ind", "spa"] } },
-            "defaultLanguage": { "enum": ["deu", "eng", "fra", "hin", "ind", "spa"] },
+            "languages": { "description": "The bundled models, by Tesseract code.", "type": "array", "items": { "enum": ["deu", "eng", "fra", "hin", "ind", "ita", "pol", "por", "rus", "spa", "tur"] } },
+            "defaultLanguage": { "enum": ["deu", "eng", "fra", "hin", "ind", "ita", "pol", "por", "rus", "spa", "tur"] },
             "maxLanguages": { "description": "Models one run may load at once, joined by + as the engine names them.", "type": "integer", "minimum": 1 },
             "files": { "description": "The extensions recognition reads.", "type": "array", "items": { "type": "string" } },
             "maxPages": {
@@ -323,7 +334,7 @@
   },
   "$defs": {
     "kind": {
-      "enum": ["pdf", "image", "audio", "video", "archive", "web", "office", "markdown", "sqlite", "font", "certificate", "calendar", "contact", "email", "spreadsheet", "text", "binary"]
+      "enum": ["pdf", "image", "model3d", "drawing", "geographic-map", "audio", "video", "archive", "web", "office", "markdown", "sqlite", "font", "certificate", "calendar", "contact", "email", "spreadsheet", "text", "binary"]
     },
     "tier": {
       "enum": ["free", "organization-50", "organization-500", "organization-unbounded"]

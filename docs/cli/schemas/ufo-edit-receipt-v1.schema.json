@@ -42,6 +42,10 @@
     },
     "operation": {
       "enum": [
+        "epub",
+        "zip-copy",
+        "subtitle",
+        "model",
         "rotate",
         "pages",
         "metadata",
@@ -72,7 +76,8 @@
         "layout",
         "chart-create",
         "slide-table",
-        "rules"
+        "rules",
+        "dicom"
       ]
     },
     "status": {
@@ -177,6 +182,9 @@
           "properties": {
             "engine": {
               "enum": [
+                "epub-metadata",
+                "verified-zip-copy",
+                "subtitle-timing",
                 "pdf-pages",
                 "pdf-info",
                 "office-properties",
@@ -222,7 +230,9 @@
                 "xlsx-layout",
                 "xlsx-charts",
                 "pptx-tables",
-                "xlsx-rules"
+                "xlsx-rules",
+                "software-model3d",
+                "dicom-metadata-copy"
               ]
             },
             "applied": {
@@ -240,6 +250,8 @@
                 "properties": {
                   "kind": {
                     "enum": [
+                      "zip_copy_created",
+                      "subtitle_synchronized",
                       "page_rotated",
                       "page_kept",
                       "page_deleted",
@@ -312,7 +324,9 @@
                       "table_cell_written",
                       "validation_added",
                       "conditional_format_added",
-                      "rules_cleared"
+                      "rules_cleared",
+                      "model_transformed",
+                      "dicom_patient_details_removed"
                     ]
                   },
                   "count": {
@@ -366,36 +380,99 @@
               "type": "array",
               "maxItems": 500,
               "uniqueItems": true,
-              "items": { "type": "string", "minLength": 1 }
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             },
             "missingKeys": {
               "description": "Merge only: placeholders the data had no key for, kept or emptied as --missing asked.",
               "type": "array",
               "maxItems": 500,
               "uniqueItems": true,
-              "items": { "type": "string", "minLength": 1 }
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             },
             "stamp": {
               "description": "UFO's provenance stamp, present when a Word, Excel or PowerPoint output carries it: the custom properties written and every package member the stamp wrote. --no-stamp writes none.",
               "type": "object",
               "additionalProperties": false,
-              "required": ["properties", "parts"],
+              "required": [
+                "properties",
+                "parts"
+              ],
               "properties": {
                 "properties": {
                   "type": "object",
                   "minProperties": 1,
                   "maxProperties": 3,
-                  "propertyNames": { "enum": ["UFO.Version", "UFO.SourceSha256", "UFO.LastModified"] },
-                  "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 128 }
+                  "propertyNames": {
+                    "enum": [
+                      "UFO.Version",
+                      "UFO.SourceSha256",
+                      "UFO.LastModified"
+                    ]
+                  },
+                  "additionalProperties": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
                 },
                 "parts": {
                   "type": "array",
                   "maxItems": 3,
-                  "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
                 }
               }
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "engine": {
+                    "const": "software-model3d"
+                  }
+                },
+                "required": [
+                  "engine"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "outputExtension": {
+                    "enum": [
+                      "stl",
+                      "obj",
+                      "ply",
+                      "3mf"
+                    ]
+                  },
+                  "applied": {
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "items": {
+                      "properties": {
+                        "kind": {
+                          "const": "model_transformed"
+                        },
+                        "count": {
+                          "const": 1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
         },
         {
           "type": "null"
@@ -472,15 +549,62 @@
       "description": "The licence this run was under: tier free and verified false when no licence file applied. Optional, so a receipt from a build older than the licence file still validates. It records a fact about the run and never marks, degrades or qualifies the work the receipt describes.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["tier", "organization", "expiresAt", "keyId", "source", "verified", "note"],
+      "required": [
+        "tier",
+        "organization",
+        "expiresAt",
+        "keyId",
+        "source",
+        "verified",
+        "note"
+      ],
       "properties": {
-        "tier": { "enum": ["free", "organization-50", "organization-500", "organization-unbounded"] },
-        "organization": { "type": ["string", "null"] },
-        "expiresAt": { "oneOf": [{ "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }, { "type": "null" }] },
-        "keyId": { "type": ["string", "null"] },
-        "source": { "type": ["string", "null"] },
-        "verified": { "type": "boolean" },
-        "note": { "type": ["string", "null"] }
+        "tier": {
+          "enum": [
+            "free",
+            "organization-50",
+            "organization-500",
+            "organization-unbounded"
+          ]
+        },
+        "organization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiresAt": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "keyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "network": {

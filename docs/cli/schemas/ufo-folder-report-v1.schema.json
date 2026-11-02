@@ -309,7 +309,7 @@
           "kind": {
             "type": ["string", "null"],
             "enum": [
-              "pdf", "image", "audio", "video", "archive", "web", "office", "markdown",
+              "pdf", "image", "model3d", "drawing", "geographic-map", "audio", "video", "archive", "web", "office", "markdown",
               "sqlite", "font", "certificate", "calendar", "contact", "email", "spreadsheet",
               "text", "binary", null
             ]

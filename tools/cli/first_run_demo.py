@@ -154,7 +154,7 @@ def mcp_smoke(ufo: Path, root: Path, source: Path, expected_hash: str, version: 
             "installedAssistantSessionVerified": False, "notInspected": receipt["notInspected"]}
 
 
-def run_demo(ufo: Path, root: Path, expect_version: str = "1.5.1", mcp: bool = False) -> dict:
+def run_demo(ufo: Path, root: Path, expect_version: str, mcp: bool = False) -> dict:
     ufo, root = ufo.resolve(), root.resolve()
     root.mkdir(parents=True, exist_ok=False)
     for name in ("inputs", "outputs", "receipts", "config"):
@@ -243,7 +243,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ufo", default="ufo", help="installed app-image executable")
     parser.add_argument("--output", type=Path, default=Path("ufo-first-look"), help="new directory, never replaces existing content")
-    parser.add_argument("--expect-version", default="1.5.1")
+    parser.add_argument("--expect-version", required=True)
     parser.add_argument("--mcp", action="store_true", help="also test local stdio discovery and one inspect call")
     args = parser.parse_args(argv)
     executable = shutil.which(args.ufo)
